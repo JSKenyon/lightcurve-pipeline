@@ -1,0 +1,74 @@
+ratt-parrot:
+  elapsed: 5.79182
+  avg:
+    cpu: 6.081818181818182
+    mem_used: 4.0
+    mem_total: 314.0
+    load: 0.3135653409090909
+    read_count: 1003.0
+    read_gb: 0.010047825899991121
+    read_gbps: 0.010234215981276367
+    read_ms: 17.545454545454547
+    write_count: 59.0
+    write_gb: 0.0004574168812144886
+    write_gbps: 0.0008324047939293386
+    write_ms: 13.0
+    num_samples: 1.0
+  peak:
+    cpu: 16.7
+    mem_used: 4
+    mem_total: 314
+    load: 0.3779296875
+    read_count: 4063
+    read_gb: 0.03114032745361328
+    read_gbps: 0.031064034185653316
+    read_ms: 56
+    write_count: 573
+    write_gb: 0.00395965576171875
+    write_gbps: 0.008087135764829237
+    write_ms: 131
+    num_samples: 1
+  total:
+    read_count: 11033
+    read_gb: 0.11052608489990234
+    read_ms: 193
+    write_count: 649
+    write_gb: 0.005031585693359375
+    write_ms: 143
+ratt-parrot.flag-save:
+  elapsed: 5.525063
+  avg:
+    cpu: 5.977777777777778
+    mem_used: 4.0
+    mem_total: 314.0
+    load: 0.3149956597222222
+    read_count: 1225.888888888889
+    read_gb: 0.01228067609998915
+    read_gbps: 0.012508486199337782
+    read_ms: 21.444444444444443
+    write_count: 72.11111111111111
+    write_gb: 0.0005590650770399305
+    write_gbps: 0.0010173836370247471
+    write_ms: 15.88888888888889
+    num_samples: 1.0
+  peak:
+    cpu: 16.7
+    mem_used: 4
+    mem_total: 314
+    load: 0.3779296875
+    read_count: 4063
+    read_gb: 0.03114032745361328
+    read_gbps: 0.031064034185653316
+    read_ms: 56
+    write_count: 573
+    write_gb: 0.00395965576171875
+    write_gbps: 0.008087135764829237
+    write_ms: 131
+    num_samples: 1
+  total:
+    read_count: 11033
+    read_gb: 0.11052608489990234
+    read_ms: 193
+    write_count: 649
+    write_gb: 0.005031585693359375
+    write_ms: 143

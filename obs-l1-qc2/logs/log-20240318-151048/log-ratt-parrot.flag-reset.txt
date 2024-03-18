@@ -1,0 +1,138 @@
+2024-03-18 15:10:56 STIMELA.ratt-parrot.flag-reset INFO: ### validated inputs
+2024-03-18 15:10:56 STIMELA.ratt-parrot.flag-reset INFO: cab flagmanager:
+2024-03-18 15:10:56 STIMELA.ratt-parrot.flag-reset INFO:   ms = ../msdir/SN2023ixf_noauto_1GC.ms
+2024-03-18 15:10:56 STIMELA.ratt-parrot.flag-reset INFO:   mode = restore
+2024-03-18 15:10:56 STIMELA.ratt-parrot.flag-reset INFO: singularity image /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg does not exist
+2024-03-18 15:10:56 STIMELA.ratt-parrot.flag-reset INFO: (re)building image /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg
+### running /usr/bin/singularity build /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg docker://quay.io/stimela2/casa:cc0.0.2
+# INFO:    Starting build...
+# Getting image source signatures
+# Copying blob sha256:345e3491a907bb7c6f1bdddcf4a94284b8b6ddd77eb7d93f09432b17b20f2bbe
+# Copying blob sha256:57671312ef6fdbecf340e5fed0fb0863350cd806c92b1fdd7978adbd02afc5c3
+# Copying blob sha256:5e9250ddb7d0fa6d13302c7c3e6a0aa40390e42424caed1e5289077ee4054709
+# Copying blob sha256:1126fecdef19cc2a8de6faf1c1bfc06b74f803b5d5f5999ea04e7360928ac4d5
+# Copying blob sha256:aa3b43b7ed756fffd96b87ffa99b0107d421811a20147e03d28a6d183bd18216
+# Copying blob sha256:d976b0f1268675300cb87e3bd7b37980a80b155816ab01b66b250d94d5c3f65c
+# Copying blob sha256:dec33940f145ebdc51367b81d5fe9dbf2942a45dd32e1da2ce8f8cfd234d239d
+# Copying blob sha256:965ec767dccba6b6f7739e45b3abbfde9c40e9d7d8ffc6e84025190415620568
+# Copying blob sha256:d8b55cea7447e2b456f17fadb675b31bd42465b2ade8f06a6e4f8fc41b0b4663
+# Copying blob sha256:b508882df56af650ba45b8a4d0940b7e56cf5b67ed8cb98110db7fc717adfb68
+# Copying blob sha256:20a45dcf5f853b1bfd55509012789d2fdf54d53c818cae5f83366cad89112f33
+# Copying blob sha256:4e554ee5c534784ffd988c80b47e8af4cd1c20b77c624c5cf2c7701ac122ba6b
+# Copying blob sha256:99acdf6ec9f72e16345e37bcb750cae7054aeffe6f282630b9e29b16b9b8d17b
+# Copying blob sha256:c922d58abd8134682711e6c389f4770a2561fc062e04c139f4af5dfd349a4df0
+# Copying blob sha256:b855cd660ef2acff8c9f0a949cb92458f3d9e3eedbd4344154e3758e12f7bd08
+# Copying config sha256:831703c8084ebc06b8064450c6925b8e5795bb9667ca62fe835f7c51f92abf4c
+# Writing manifest to image destination
+# Storing signatures
+# 2024/03/18 15:11:42  info unpack layer: sha256:345e3491a907bb7c6f1bdddcf4a94284b8b6ddd77eb7d93f09432b17b20f2bbe
+# 2024/03/18 15:11:44  info unpack layer: sha256:57671312ef6fdbecf340e5fed0fb0863350cd806c92b1fdd7978adbd02afc5c3
+# 2024/03/18 15:11:44  info unpack layer: sha256:5e9250ddb7d0fa6d13302c7c3e6a0aa40390e42424caed1e5289077ee4054709
+# 2024/03/18 15:11:44  info unpack layer: sha256:aa3b43b7ed756fffd96b87ffa99b0107d421811a20147e03d28a6d183bd18216
+# 2024/03/18 15:11:44  info unpack layer: sha256:d976b0f1268675300cb87e3bd7b37980a80b155816ab01b66b250d94d5c3f65c
+# 2024/03/18 15:11:44  info unpack layer: sha256:1126fecdef19cc2a8de6faf1c1bfc06b74f803b5d5f5999ea04e7360928ac4d5
+# 2024/03/18 15:11:44  info unpack layer: sha256:dec33940f145ebdc51367b81d5fe9dbf2942a45dd32e1da2ce8f8cfd234d239d
+# 2024/03/18 15:11:45  warn rootless{usr/lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0/gst-ptp-helper} ignoring (usually) harmless EPERM on setxattr "security.capability"
+# 2024/03/18 15:11:47  info unpack layer: sha256:965ec767dccba6b6f7739e45b3abbfde9c40e9d7d8ffc6e84025190415620568
+# 2024/03/18 15:11:47  info unpack layer: sha256:d8b55cea7447e2b456f17fadb675b31bd42465b2ade8f06a6e4f8fc41b0b4663
+# 2024/03/18 15:11:47  info unpack layer: sha256:b508882df56af650ba45b8a4d0940b7e56cf5b67ed8cb98110db7fc717adfb68
+# 2024/03/18 15:11:47  info unpack layer: sha256:20a45dcf5f853b1bfd55509012789d2fdf54d53c818cae5f83366cad89112f33
+# 2024/03/18 15:11:51  warn rootless{usr/lib/x86_64-linux-gnu/gstreamer1.0/gstreamer-1.0/gst-ptp-helper} ignoring (usually) harmless EPERM on setxattr "security.capability"
+# 2024/03/18 15:11:55  info unpack layer: sha256:4e554ee5c534784ffd988c80b47e8af4cd1c20b77c624c5cf2c7701ac122ba6b
+# 2024/03/18 15:12:00  info unpack layer: sha256:99acdf6ec9f72e16345e37bcb750cae7054aeffe6f282630b9e29b16b9b8d17b
+# 2024/03/18 15:12:00  info unpack layer: sha256:c922d58abd8134682711e6c389f4770a2561fc062e04c139f4af5dfd349a4df0
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/asdm2MS} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/bdflags2MS} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/buildmytasks} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/casabrowser} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/casafeather} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/casalogger} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/casaplotms} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/casaviewer} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/ipython} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/msuvbin} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:00  warn rootless{casa-release-5.8.0-109.el7/bin/python} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/libpython2.7.so} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpiCC} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpiCC-vt} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpic++} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpic++-vt} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpicc} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpicc-vt} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpicxx} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpicxx-vt} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpiexec} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpif77} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpif77-vt} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpif90} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpif90-vt} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/mpirun} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/ompi-clean} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/ompi-ps} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/ompi-top} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/orteCC} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/ortec++} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/ortecc} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtCC} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtc++} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtcc} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtcxx} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtf77} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtf90} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtfiltergen} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtfiltergen-mpi} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:10  warn rootless{casa-release-5.8.0-109.el7/lib/mpi/bin/vtfort} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:12  warn rootless{casa-release-5.8.0-109.el7/lib/python2.7/regressions/unit_tests.py} ignoring (usually) harmless EPERM on setxattr "user.rootlesscontainers"
+# 2024/03/18 15:12:17  info unpack layer: sha256:b855cd660ef2acff8c9f0a949cb92458f3d9e3eedbd4344154e3758e12f7bd08
+# INFO:    Creating SIF file...
+# INFO:    Build complete: /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg
+2024-03-18 15:12:54 STIMELA.ratt-parrot.flag-reset INFO: (singularity build) exited with code 0 after 0:01:57
+### running /usr/bin/singularity exec --containall --pwd /mnt/home/bright/FAST_IMAGING/parrot-stew-recipes --bind /mnt/home/bright/FAST_IMAGING/msdir/SN2023ixf_noauto_1GC.ms:/mnt/home/bright/FAST_IMAGING/msdir/SN2023ixf_noauto_1GC.ms:ro --bind /mnt/home/bright/FAST_IMAGING/parrot-stew-recipes:/mnt/home/bright/FAST_IMAGING/parrot-stew-recipes:rw /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg casa --log2term --nologger --nologfile -c 
+import sys, json
+kw = json.loads(sys.argv[-1])
+
+try:
+    utype = unicode
+except NameError:
+    utype = bytes
+
+def stringify(x):
+    if isinstance(x, (utype, str)):
+        return str(x)
+    elif isinstance(x, list):
+        return [stringify(y) for y in x]
+    else:
+        return x
+
+kw = {key: stringify(value) for key, value in kw.items()}
+
+flagmanager(**kw)
+
+ {"vis": "../msdir/SN2023ixf_noauto_1GC.ms", "mode": "restore"}
+# 
+# =========================================
+# The start-up time of CASA may vary
+# depending on whether the shared libraries
+# are cached or not.
+# =========================================
+# 
+# Python: FAST_IMAGING/parrot-stew-recipesIPython 5.1.0 -- An enhanced Interactive Python.
+# 
+# CASA 5.8.0-109   -- Common Astronomy Software Applications
+# 
+# Creating a new telemetry file
+# Telemetry initialized. Telemetry will send anonymized usage statistics to NRAO.
+# You can disable telemetry by adding the following line to your ~/.casarc file:
+# EnableTelemetry: False
+# 2024-03-18 15:12:58	INFO	::casa	CASA Version  5.8.0-109
+# --> CrashReporter initialized.
+# 2024-03-18 15:13:00	INFO	flagmanager::::
+# 2024-03-18 15:13:00	INFO	flagmanager::::+	##########################################
+# 2024-03-18 15:13:00	INFO	flagmanager::::+	##### Begin Task: flagmanager        #####
+# 2024-03-18 15:13:00	INFO	flagmanager::::	flagmanager(vis="../msdir/SN2023ixf_noauto_1GC.ms",mode="restore",versionname="",oldname="",comment="",
+# 2024-03-18 15:13:00	INFO	flagmanager::::+	        merge="replace")
+# 2024-03-18 15:13:00	INFO	flagmanager::AgentFlagger::open	Table type is Measurement Set
+! 2024-03-18 15:13:00	SEVERE	flagmanager::::	Task flagmanager raised an exception of class ValueError with the following message: Illegal versionname: ''
+2024-03-18 15:13:00 STIMELA.ratt-parrot.flag-reset ERROR: declaring 'flagmanager' as failed based on its output
+2024-03-18 15:13:00 STIMELA.ratt-parrot.flag-reset INFO: flagmanager returns exit code 0 after 0:00:05
+2024-03-18 15:13:00 STIMELA.ratt-parrot.flag-reset ERROR: step 'ratt-parrot.flag-reset' has failed, aborting the recipe

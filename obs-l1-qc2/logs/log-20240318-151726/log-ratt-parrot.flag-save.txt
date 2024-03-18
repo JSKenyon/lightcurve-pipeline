@@ -1,0 +1,54 @@
+2024-03-18 15:17:34 STIMELA.ratt-parrot.flag-save INFO: ### validated inputs
+2024-03-18 15:17:34 STIMELA.ratt-parrot.flag-save INFO: cab flagmanager:
+2024-03-18 15:17:34 STIMELA.ratt-parrot.flag-save INFO:   ms = ../msdir/SN2023ixf_noauto_1GC.ms
+2024-03-18 15:17:34 STIMELA.ratt-parrot.flag-save INFO:   mode = save
+2024-03-18 15:17:34 STIMELA.ratt-parrot.flag-save INFO: singularity image /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg exists
+### running /usr/bin/singularity exec --containall --pwd /mnt/home/bright/FAST_IMAGING/parrot-stew-recipes --bind /mnt/home/bright/FAST_IMAGING/msdir/SN2023ixf_noauto_1GC.ms:/mnt/home/bright/FAST_IMAGING/msdir/SN2023ixf_noauto_1GC.ms:ro --bind /mnt/home/bright/FAST_IMAGING/parrot-stew-recipes:/mnt/home/bright/FAST_IMAGING/parrot-stew-recipes:rw /home/bright/.singularity/quay.io-stimela2-casa:cc0.0.2.simg casa --log2term --nologger --nologfile -c 
+import sys, json
+kw = json.loads(sys.argv[-1])
+
+try:
+    utype = unicode
+except NameError:
+    utype = bytes
+
+def stringify(x):
+    if isinstance(x, (utype, str)):
+        return str(x)
+    elif isinstance(x, list):
+        return [stringify(y) for y in x]
+    else:
+        return x
+
+kw = {key: stringify(value) for key, value in kw.items()}
+
+flagmanager(**kw)
+
+ {"vis": "../msdir/SN2023ixf_noauto_1GC.ms", "mode": "save"}
+# 
+# =========================================
+# The start-up time of CASA may vary
+# depending on whether the shared libraries
+# are cached or not.
+# =========================================
+# 
+# Python: FAST_IMAGING/parrot-stew-recipesIPython 5.1.0 -- An enhanced Interactive Python.
+# 
+# CASA 5.8.0-109   -- Common Astronomy Software Applications
+# 
+# Creating a new telemetry file
+# Telemetry initialized. Telemetry will send anonymized usage statistics to NRAO.
+# You can disable telemetry by adding the following line to your ~/.casarc file:
+# EnableTelemetry: False
+# 2024-03-18 15:17:38	INFO	::casa	CASA Version  5.8.0-109
+# --> CrashReporter initialized.
+# 2024-03-18 15:17:40	INFO	flagmanager::::
+# 2024-03-18 15:17:40	INFO	flagmanager::::+	##########################################
+# 2024-03-18 15:17:40	INFO	flagmanager::::+	##### Begin Task: flagmanager        #####
+# 2024-03-18 15:17:40	INFO	flagmanager::::	flagmanager(vis="../msdir/SN2023ixf_noauto_1GC.ms",mode="save",versionname="",oldname="",comment="",
+# 2024-03-18 15:17:40	INFO	flagmanager::::+	        merge="replace")
+# 2024-03-18 15:17:40	INFO	flagmanager::AgentFlagger::open	Table type is Measurement Set
+! 2024-03-18 15:17:40	SEVERE	flagmanager::::	Task flagmanager raised an exception of class ValueError with the following message: Illegal empty versionname: ''
+2024-03-18 15:17:40 STIMELA.ratt-parrot.flag-save ERROR: declaring 'flagmanager' as failed based on its output
+2024-03-18 15:17:40 STIMELA.ratt-parrot.flag-save INFO: flagmanager returns exit code 0 after 0:00:05
+2024-03-18 15:17:40 STIMELA.ratt-parrot.flag-save ERROR: step 'ratt-parrot.flag-save' has failed, aborting the recipe

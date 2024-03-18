@@ -1,0 +1,6 @@
+2024-03-18 15:19:41 STIMELA.ratt-parrot.flag-save INFO: ### validated inputs
+2024-03-18 15:19:41 STIMELA.ratt-parrot.flag-save INFO: cab flagmanager:
+2024-03-18 15:19:41 STIMELA.ratt-parrot.flag-save INFO:   ms = ../msdir/SN2023ixf_noauto_1GC.ms
+2024-03-18 15:19:41 STIMELA.ratt-parrot.flag-save INFO:   mode = save
+2024-03-18 15:19:41 STIMELA.ratt-parrot.flag-save INFO:   versionname = Unresolved(recipe.initial-flag-version)
+2024-03-18 15:19:41 STIMELA.ratt-parrot.flag-save ERROR: step 'flag-save': invalid inputs: 'versionname'

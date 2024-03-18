@@ -1,0 +1,17 @@
+/home/bright/.local/lib/python3.10/site-packages/stimela:
+  version: 2.0rc17
+  mtime: 1710773735.1060987
+  mtime_str: Mon Mar 18 14:55:35 2024
+/home/bright/.local/lib/python3.10/site-packages/stimela/config.py:
+  origin: /home/bright/.local/lib/python3.10/site-packages/stimela
+/home/bright/.local/lib/python3.10/site-packages/scabha/configuratt/__init__.py:
+  origin: /home/bright/.local/lib/python3.10/site-packages/stimela
+/home/bright/.local/lib/python3.10/site-packages/scabha/configuratt/cache.py:
+  version: null
+  mtime: 1710773734.8581004
+  mtime_str: Mon Mar 18 14:55:34 2024
+  md5hash: 413c28261f00873293bdb574eda39cf8
+/home/bright/.local/lib/python3.10/site-packages/stimela/stimela.conf:
+  mtime: 1710773734.9420998
+  mtime_str: Mon Mar 18 14:55:34 2024
+  md5hash: 853b24d87db43a29ead70a04cafb50c5
