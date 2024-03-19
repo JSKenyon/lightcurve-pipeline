@@ -14,8 +14,9 @@ import numpy as np
 import Tigger
 
 
-def match_catalogs(master_catalog: str, 
-                    catalogs: Dict[str, Tuple[str, float, str]], 
+def match_catalogs(master_catalog: str,
+                    base_catalog: str, base_catalog_type: str,
+                    add_catalog:str, add_catalog_type: str, 
                     ra0: float, dec0: float,     
                     max_radius_deg: Optional[float] = None,     # max distance from centre
                     # matches sources from region files
@@ -26,13 +27,26 @@ def match_catalogs(master_catalog: str,
                     search_box_frame='geocentricmeanecliptic',   # if not None, box is converted to this coordinate frame
                     search_box_label="search box",  # label for matches within this box
                     search_box_minflux=None, #     only consider sources above this flux (Quantity string)
-                    search_box_color="green"):
+                    search_box_color="green",
+                    catalogs: Dict[str, Tuple[str, float, str]]=None):
     
     # load model, filter, and convert to coordinates
-    num_catalogs = len(catalogs)
+    # num_catalogs = len(catalogs)
     centre = SkyCoord(ra0, dec0, frame=FK5)
 
     cats = OrderedDict()
+
+    combined_catalogs = {}
+    if base_catalog:
+        combined_catalogs['base'] = (base_catalog, 0, base_catalog_type)
+    #combined_catalogs.update(**catalogs)
+
+    if add_catalog:
+        combined_catalogs['add'] = (add_catalog, 0, add_catalog_type)
+    #combined_catalogs.update(**catalogs)
+    catalogs = combined_catalogs
+
+    num_catalogs = len(catalogs)
 
     for icat, (label, (catalog, xmatch_arcsec, cat_type)) in enumerate(catalogs.items()):
         model = Tigger.load(catalog)

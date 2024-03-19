@@ -1,8 +1,8 @@
 taskname           = "flagmanager"
 vis                =  "../msdir/SN2023ixf_noauto_1GC.ms"
-mode               =  "save"
+mode               =  "restore"
 versionname        =  "initial_flags"
 oldname            =  ""
 comment            =  ""
 merge              =  "replace"
-#flagmanager(vis="../msdir/SN2023ixf_noauto_1GC.ms",mode="save",versionname="initial_flags",oldname="",comment="",merge="replace")
+#flagmanager(vis="../msdir/SN2023ixf_noauto_1GC.ms",mode="restore",versionname="initial_flags",oldname="",comment="",merge="replace")

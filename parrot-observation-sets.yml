@@ -6,13 +6,15 @@ obs:
 
 band:
   L:
-    wsclean_size: 13000
+    wsclean_size: 2048
     pixel_scale: 3
     htc_size: 2048
     htc_scale: 3arcsec
     wsclean_nchan: 8
     lib.steps.ddfacet.base.params.Image.Cell: 0.8
     psf_size: 6
-    weight: "briggs 0"
+    weight: "natural"
     lightcurves-within: 1deg
     initial-flag-version: "initial_flags"
+    htc_cadence: 20
+    catalog-flux-columns: [flux_base]
