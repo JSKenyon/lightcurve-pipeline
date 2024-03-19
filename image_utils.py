@@ -52,13 +52,13 @@ def get_freq_axis(hdr):
         return None
 
 
-def stack_time_cube(images: List[str], cube: str, ms: str, verbose: bool = False, include_freq_axis: bool = False):
+def stack_time_cube(images: List[str], cube: str, ms: str, cadence: int, verbose: bool = False, include_freq_axis: bool = False):
     print(f"will process {len(images)} snapshot images")
     hdr = fits.open(images[0])[0].header
     # get MS timestamps
     ms_tms = sorted(set(table(ms).getcol("TIME")))
     t0 = ms_tms[0]
-    dt = ms_tms[1] - t0
+    dt = (ms_tms[1] - t0) * cadence
     grid = np.arange(t0, ms_tms[-1] + dt/2, dt)
     print(f"MS has {len(ms_tms)} unique timestamps. Total grid of {len(grid)} timestamps with interval {dt}s")
     # get freq axis and copy to axis 4
@@ -752,8 +752,3 @@ def extract_model_spectrum(lightcurves: List[str], modelsets: List[List[str]], n
 
 if __name__ == '__main__':
     cli()
-
-
-
-
-    

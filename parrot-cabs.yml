@@ -19,6 +19,10 @@ _include:
     - oms-ddf-cabs.yml
 
 cabs:
+  wsclean:
+    inputs:
+      reorder:
+        dtype: bool
   wget:
     command: wget
     inputs:
@@ -42,12 +46,16 @@ cabs:
       images:
         dtype: List[File]
         required: true
+      cadence:
+        dtype: int
+        default: 1
       ms:
         dtype: MS
         required: true
     outputs:
       cube:
         dtype: File
+      
 
   convolve_image:
     flavour: python
@@ -147,7 +155,7 @@ cabs:
         # maps label: -> filename, xmatch_arcsrc, type
         #   where type is 'add', 'spi'
         dtype: Dict[str, Tuple[File, float, str]]
-        required: true
+        required: false
       ra0:
         dtype: str
         required: true
@@ -166,6 +174,14 @@ cabs:
       search_box_label:
         dtype: str
       search_box_minflux:
+        dtype: str
+      base_catalog:
+        dtype: str
+      base_catalog_type:
+        dtype: str
+      add_catalog:
+        dtype: str
+      add_catalog_type:
         dtype: str
     outputs:
       master_catalog:
@@ -363,7 +379,7 @@ lib:
           dtype: str
         skip-regions:
           dtype: File
-          default: 'rrat.reg'
+#          default: 'rrat.reg'
       
       aliases:
         # inputs
@@ -372,8 +388,8 @@ lib:
         dilate: mask.dilate
         # outputs
         mask: mask.mask
-        except-rrat: mask-except-rrat.mask
-        mul: mask-mul.mask
+#        except-rrat: mask-except-rrat.mask
+ #       mul: mask-mul.mask
 
       defaults:
         threshold: 6.5
@@ -385,23 +401,23 @@ lib:
           params:
             mask: '{recipe.prefix}-mask.fits'
 
-        mask-except-rrat:
-          cab: breizorro
-          info: "makes mask which contains everything except the dwarf"
-          params:
-            mask-image: '{previous.mask}'
-            subtract: '{recipe.skip-regions}'
-            number-islands: true
-            mask: '{recipe.prefix}-mask-nodwarf.fits'
+#        mask-except-rrat:
+#          cab: breizorro
+#          info: "makes mask which contains everything except the dwarf"
+#          params:
+#            mask-image: '{previous.mask}'
+#            subtract: '{recipe.skip-regions}'
+#            number-islands: true
+#            mask: '{recipe.prefix}-mask-nodwarf.fits'
 
-        mask-mul:
-          cab: breizorro
-          info: "makes mask which is 1 everywhere except at the dwarf"
-          params:
-            mask-image: '{steps.mask.mask}'
-            subtract: '{steps.mask-except-rrat.mask}'
-            invert: true
-            mask: '{recipe.prefix}-multiplicative-mask.fits'
+#        mask-mul:
+#          cab: breizorro
+#          info: "makes mask which is 1 everywhere except at the dwarf"
+#          params:
+#            mask-image: '{steps.mask.mask}'
+#            subtract: '{steps.mask-except-rrat.mask}'
+#            invert: true
+#            mask: '{recipe.prefix}-multiplicative-mask.fits'
 
     upsample-fix:
       inputs:
@@ -446,9 +462,9 @@ lib:
           auto-threshold: 3
           baseline-averaging: 12
           no-update-model-required: true
-          parallel-deconvolution: 1500
+#          parallel-deconvolution: 1500
           auto-mask: =IF(recipe.automask, 5, UNSET)
-          fits-mask: =IF(recipe.automask, UNSET, steps.mask-1.mask)
+#          fits-mask: =IF(recipe.automask, UNSET, steps.mask-1.mask)
       rrat:
         _use:
           - lib.steps.wsclean.image
@@ -492,7 +508,7 @@ lib:
           K:
             time_interval: 1
             freq_interval: 0
-            type: delay
+            type: delay_and_offset
             initial_estimate: false
 
       k-de:

@@ -27,7 +27,7 @@ ratt-parrot:
     log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'          # put logs into output dir
     # some more directory assignments
     dirs:
-      ms: ../msdir       # MSs live here
+      ms: msdir       # MSs live here
       temp: "{config.run.env.HOME}/tmp"   # temp files go here
       base: .            # base project directory -- directory of recipe by default, but see below
 
@@ -139,9 +139,10 @@ ratt-parrot:
       _use: lib.steps.wsclean.rrat
       params:
         column: DATA
-        niter: 150000
-        fits-mask: =IF(recipe.automask, UNSET, recipe.deep-mask-1)
-        auto-threshold: 2
+        niter: 15000
+#        fits-mask: =IF(recipe.automask, UNSET, recipe.deep-mask-1)
+        auto-threshold: 5
+#        no-reorder: true
 
     mask-1:
       recipe: make_masks
@@ -438,21 +439,23 @@ ratt-parrot:
       cab: make-master-catalog
       params:
         master_catalog: mastercat.ecsv
-        ra0: -57.594961deg
-        dec0: -20.446559deg
+        ra0: 210.9107505deg
+        dec0: 54.3116944deg
         max_radius_deg: 1.5
         catalogs: 
-          U: [U-band.gaul, 0, main]
-          L: [L-band.gaul, 6, main]
-          src_U: [U-band.srl, 6, srl]
-          src_L: [L-band.srl, 6, srl]
-          spi_U: [U-band.spi.gaul, 6, spi]
-          spi_L: [L-band.spi.gaul, 6, spi]
-        interesting_regions: [interests.reg, agn-candidates.reg, vlbi-calibrators.reg]
-        search_box_radec: [303.19deg, -20.492deg, 15arcsec, 40arcmin]
-        search_box_frame: geocentricmeanecliptic
-        search_box_label: PSR
-        search_box_minflux: 200uJy
+          #U: [U-band.gaul, 0, main]
+          #L: =LIST( STRIPEXT(current.image) + '.gaul', 6, main)
+          #src_U: [U-band.srl, 6, srl]
+          src_L: [obs-l1-qc2/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
+          #spi_U: [U-band.spi.gaul, 6, spi]
+          #spi_L: [L-band.spi.gaul, 6, spi]
+          #src_L: =STRIPEXT(current.image) + '.srl'
+
+        #interesting_regions: [interests.reg, agn-candidates.reg, vlbi-calibrators.reg]
+        #search_box_radec: [303.19deg, -20.492deg, 15arcsec, 40arcmin]
+        #search_box_frame: geocentricmeanecliptic
+        #search_box_label: PSR
+        #search_box_minflux: 200uJy
 
 #    augment-master-catalog:
 #      tags: [master-catalog, never]
@@ -469,7 +472,7 @@ ratt-parrot:
       params:
         ms: =recipe.ms
         ms-info-file: '{recipe.ms}.yml'
-      skip_if_outputs: exist
+#      skip_if_outputs: exist
 
     ms-info:
       cab: load-ms-info
@@ -517,6 +520,7 @@ ratt-parrot:
         weight: '{recipe.htc_weight}'
         size: '{recipe.htc_size}'
         scale: '{recipe.htc_scale}'
+        reorder: true
       tags: [lightcurves]
       skip_if_outputs: fresh
 
@@ -537,6 +541,7 @@ ratt-parrot:
         images: =steps.image-*htc.dirty.per-interval
         cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-dirty.fits'
         ms: =recipe.ms
+        cadence: =recipe.htc_cadence
       skip_if_outputs: fresh
       tags: [lightcurves]
 
@@ -555,6 +560,7 @@ ratt-parrot:
         images: =steps.image-*htc.restored.per-interval
         cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-clean.fits'
         ms: =recipe.ms
+        cadence: =recipe.htc_cadence
       skip_if_outputs: fresh
       tags: [lightcurves]
 
@@ -626,7 +632,7 @@ ratt-parrot:
         flag_excess_std: 3
         within: =recipe.lightcurves-within
         nsrc: 50000
-        ncpu: =root.ncpu
+#        ncpu: =root.ncpu
         # beaminfo: =steps.derive-obs-specific-power-beam.beaminfo
         fluxcols: =recipe.catalog-flux-columns
         plot_title: =IF(recipe.publish-plots, NOSUBST(recipe.publish-plot-title), UNSET)
