@@ -141,14 +141,23 @@ ratt-parrot:
         column: DATA
         niter: 15000
 #        fits-mask: =IF(recipe.automask, UNSET, recipe.deep-mask-1)
-        auto-threshold: 5
-#        no-reorder: true
+        auto-threshold: 2
+        auto-mask: 4
+        #        no-reorder: true
 
     mask-1:
       recipe: make_masks
       params:
         restored-image: "{previous.restored.mfs}"
         prefix: "{previous.prefix}"
+
+    # image-1-2:
+    #   _use: lib.steps.wsclean.rrat
+    #   params:
+    #     column: DATA
+    #     niter: 150000
+    #     fits-mask: =steps.mask-1.mask
+    #     auto-threshold: 1  
 
     flagsummary-1:
       cab: casa.flagsummary
@@ -534,16 +543,16 @@ ratt-parrot:
       tags: [lightcurves]
       skip_if_outputs: fresh
 
-    image-5tf:
-      skip: true
-      _use: lib.steps.wsclean.dirty
-      params:
-        column: CORRECTED_DATA
-        prefix: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/images/cad{recipe.htc_cadence}'
-        intervals-out: =steps.ms-info.num_intervals / recipe.htc_cadence
-        nchan: =recipe.htfc_nband
-        size: =recipe.htfc_size
-        scale: =recipe.htfc_scale
+    # image-5tf:
+    #   skip: true
+    #   _use: lib.steps.wsclean.dirty
+    #   params:
+    #     column: CORRECTED_DATA
+    #     prefix: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/images/cad{recipe.htc_cadence}'
+    #     intervals-out: =steps.ms-info.num_intervals / recipe.htc_cadence
+    #     nchan: =recipe.htfc_nband
+    #     size: =recipe.htfc_size
+    #     scale: =recipe.htfc_scale
 
     cube-4htc:
       cab: stack_time_cube
@@ -564,44 +573,44 @@ ratt-parrot:
       skip_if_outputs: fresh
       tags: [lightcurves]
 
-    clean-cube-4htc:
-      cab: stack_time_cube
-      params:
-        images: =steps.image-*htc.restored.per-interval
-        cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-clean.fits'
-        ms: =recipe.ms
-        cadence: =recipe.htc_cadence
-      skip_if_outputs: fresh
-      tags: [lightcurves]
+    # clean-cube-4htc:
+    #   cab: stack_time_cube
+    #   params:
+    #     images: =steps.image-*htc.restored.per-interval
+    #     cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-clean.fits'
+    #     ms: =recipe.ms
+    #     cadence: =recipe.htc_cadence
+    #   skip_if_outputs: fresh
+    #   tags: [lightcurves]
 
-    cubes-5tf:
-      tags: [lightcurves-per-band, never]
-      recipe:
-        inputs:
-          bands: List[int] = =RANGE(recipe.htfc_nband)
-          prefix: str = =steps.image-5tf.prefix
-          cube-prefix: str = =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube'
-          lc-suffix: str = =recipe.lc-suffix
-        for_loop:
-          var: band
-          over: bands
-        steps:
-          stack:
-            cab: stack_time_cube
-            params:
-              images: =GLOB("{recipe.prefix}-t*-{recipe.band:04d}-image.fits")
-              cube: "{recipe.cube-prefix}{recipe.band:04d}.fits"
-              ms: =root.ms
-            skip_if_outputs: fresh
-          convolve:
-            cab: convolve_image
-            params:
-              image: =previous.cube
-              size_arcsec: =root.convolve.arcsec
-              size_sec: =root.convolve.time
-              outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix}.fits'
-            skip: =not recipe.lc-suffix 
-            skip_if_outputs: fresh
+    # cubes-5tf:
+    #   tags: [lightcurves-per-band, never]
+    #   recipe:
+    #     inputs:
+    #       bands: List[int] = =RANGE(recipe.htfc_nband)
+    #       prefix: str = =steps.image-5tf.prefix
+    #       cube-prefix: str = =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube'
+    #       lc-suffix: str = =recipe.lc-suffix
+    #     for_loop:
+    #       var: band
+    #       over: bands
+    #     steps:
+    #       stack:
+    #         cab: stack_time_cube
+    #         params:
+    #           images: =GLOB("{recipe.prefix}-t*-{recipe.band:04d}-image.fits")
+    #           cube: "{recipe.cube-prefix}{recipe.band:04d}.fits"
+    #           ms: =root.ms
+    #         skip_if_outputs: fresh
+    #       convolve:
+    #         cab: convolve_image
+    #         params:
+    #           image: =previous.cube
+    #           size_arcsec: =root.convolve.arcsec
+    #           size_sec: =root.convolve.time
+    #           outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix}.fits'
+    #         skip: =not recipe.lc-suffix 
+    #         skip_if_outputs: fresh
 
     cube-convolve:
       cab: convolve_image
@@ -614,16 +623,16 @@ ratt-parrot:
       skip_if_outputs: fresh
       tags: [lightcurves]
 
-    cube-convolve-sub:
-      cab: convolve_image
-      params:
-        image: =steps.cube-4htc.cube
-        size_arcsec: =recipe.convolve-sub.arcsec
-        size_sec: =recipe.convolve-sub.time
-        outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix-sub}.fits'
-      skip: =not recipe.lc-suffix-sub
-      skip_if_outputs: fresh
-      tags: [lightcurves]
+    # cube-convolve-sub:
+    #   cab: convolve_image
+    #   params:
+    #     image: =steps.cube-4htc.cube
+    #     size_arcsec: =recipe.convolve-sub.arcsec
+    #     size_sec: =recipe.convolve-sub.time
+    #     outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix-sub}.fits'
+    #   skip: =not recipe.lc-suffix-sub
+    #   skip_if_outputs: fresh
+    #   tags: [lightcurves]
 
     extract-lightcurves:
       info: extracts lightcurves from convolved cube
@@ -642,7 +651,7 @@ ratt-parrot:
         flag_excess_std: 3
         within: =recipe.lightcurves-within
         nsrc: 50000
-#        ncpu: =root.ncpu
+        ncpu: 1  #=root.ncpu
         # beaminfo: =steps.derive-obs-specific-power-beam.beaminfo
         fluxcols: =recipe.catalog-flux-columns
         plot_title: =IF(recipe.publish-plots, NOSUBST(recipe.publish-plot-title), UNSET)
@@ -659,62 +668,62 @@ ratt-parrot:
       skip_if_outputs: fresh
       tags: [lightcurves]
 
-    extract-lightcurves-per-band:
-      info: extracts per-band lightcurves using the cubes-5tf output
-      tags: [lightcurves-per-band, never]
-      recipe:
-        inputs:
-          bands: List[int] = =RANGE(recipe.htfc_nband)
-          cube-prefix: str = =steps.cubes-5tf.cube-prefix
-          dir-out: str = =recipe.dir-out
-          catalog: str = =steps.make-master-catalog.master_catalog
-          obs: str = =recipe.obs
-          htc_cadence: int = =recipe.htc_cadence
-          lightcurves-within: str = =recipe.lightcurves-within
-          catalog-flux-columns: List[str] = =recipe.catalog-flux-columns
-          lc-suffix: str = =recipe.lc-suffix
-          nsrc: int = 100  "limit number of sources for now to 100"
-        for_loop:
-          var: band
-          over: bands
-        steps:
-          lc1:
-            _use: ratt-parrot.steps.extract-lightcurves
-            params:
-              cube: '{recipe.cube-prefix}{recipe.band:04d}.fits'
-              outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}-perband/band{recipe.band:04d}'
-              catalog: =recipe.catalog
-              nsrc: =recipe.nsrc
-          lc2:
-            _use: ratt-parrot.steps.extract-lightcurves
-            params:
-              cube: '{recipe.cube-prefix}{recipe.band:04d}{recipe.lc-suffix}.fits'
-              outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix}-perband/band{recipe.band:04d}'
-              catalog: =recipe.catalog
-              nsrc: =recipe.nsrc
+    # extract-lightcurves-per-band:
+    #   info: extracts per-band lightcurves using the cubes-5tf output
+    #   tags: [lightcurves-per-band, never]
+    #   recipe:
+    #     inputs:
+    #       bands: List[int] = =RANGE(recipe.htfc_nband)
+    #       cube-prefix: str = =steps.cubes-5tf.cube-prefix
+    #       dir-out: str = =recipe.dir-out
+    #       catalog: str = =steps.make-master-catalog.master_catalog
+    #       obs: str = =recipe.obs
+    #       htc_cadence: int = =recipe.htc_cadence
+    #       lightcurves-within: str = =recipe.lightcurves-within
+    #       catalog-flux-columns: List[str] = =recipe.catalog-flux-columns
+    #       lc-suffix: str = =recipe.lc-suffix
+    #       nsrc: int = 100  "limit number of sources for now to 100"
+    #     for_loop:
+    #       var: band
+    #       over: bands
+    #     steps:
+    #       lc1:
+    #         _use: ratt-parrot.steps.extract-lightcurves
+    #         params:
+    #           cube: '{recipe.cube-prefix}{recipe.band:04d}.fits'
+    #           outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}-perband/band{recipe.band:04d}'
+    #           catalog: =recipe.catalog
+    #           nsrc: =recipe.nsrc
+    #       lc2:
+    #         _use: ratt-parrot.steps.extract-lightcurves
+    #         params:
+    #           cube: '{recipe.cube-prefix}{recipe.band:04d}{recipe.lc-suffix}.fits'
+    #           outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix}-perband/band{recipe.band:04d}'
+    #           catalog: =recipe.catalog
+    #           nsrc: =recipe.nsrc
 
-    extract-model-fluxes:
-      skip: true
-      cab: extract-model-spectrum
-      params:
-        lightcurves: =GLOB("{steps.extract-lightcurves-1.outdir}/src-chunk*/src000000*.ecsv")
-        modelsets: =LIST(GLOB("{steps.predict-3.prefix}-????-model.fits"),
-                         GLOB("{steps.predict-5.prefix}-????-model.fits"))
+    # extract-model-fluxes:
+    #   skip: true
+    #   cab: extract-model-spectrum
+    #   params:
+    #     lightcurves: =GLOB("{steps.extract-lightcurves-1.outdir}/src-chunk*/src000000*.ecsv")
+    #     modelsets: =LIST(GLOB("{steps.predict-3.prefix}-????-model.fits"),
+    #                      GLOB("{steps.predict-5.prefix}-????-model.fits"))
   
-    extract-lightcurves-base:
-      _use: ratt-parrot.steps.extract-lightcurves
-      params:
-        cube: =steps.cube-convolve-sub.outimage
-        outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix-sub}'
-      skip: =not recipe.lc-suffix-sub
-      skip_if_outputs: fresh
+    # extract-lightcurves-base:
+    #   _use: ratt-parrot.steps.extract-lightcurves
+    #   params:
+    #     cube: =steps.cube-convolve-sub.outimage
+    #     outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix-sub}'
+    #   skip: =not recipe.lc-suffix-sub
+    #   skip_if_outputs: fresh
 
-    extract-lightcurves-sub:
-      _use: ratt-parrot.steps.extract-lightcurves
-      params:
-        cube: =steps.extract-lightcurves.cube
-        outdir: '{steps.extract-lightcurves.outdir}-sub{recipe.lc-suffix-sub}'
-        subtract: '{steps.extract-lightcurves-base.outdir}'
-      skip: =not recipe.lc-suffix-sub
-      skip_if_outputs: fresh
+    # extract-lightcurves-sub:
+    #   _use: ratt-parrot.steps.extract-lightcurves
+    #   params:
+    #     cube: =steps.extract-lightcurves.cube
+    #     outdir: '{steps.extract-lightcurves.outdir}-sub{recipe.lc-suffix-sub}'
+    #     subtract: '{steps.extract-lightcurves-base.outdir}'
+    #   skip: =not recipe.lc-suffix-sub
+    #   skip_if_outputs: fresh
         
