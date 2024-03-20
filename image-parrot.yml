@@ -165,6 +165,16 @@ ratt-parrot:
 
     selfcal-2: 
       _use: lib.steps.quartical.k
+      params:
+        input_ms:
+          time_chunk: 0
+          select_uv_range: [0,0]
+        output:
+          flags: false
+        K:
+          time_interval: 0
+          type: delay_and_offset
+          # freq_interval: 0
 
     flagsummary-2:
       cab: casa.flagsummary
@@ -480,12 +490,12 @@ ratt-parrot:
         ms-info-file: =steps.save-ms-info.ms-info-file
       tags: [lightcurves]
 
-    get-albus-info:
-      skip: true
-      cab: query-albus
-      params:
-        ms: =recipe.ms
-        output_dir: '{recipe.dir-out}/albus'
+    # get-albus-info:
+    #   skip: true
+    #   cab: query-albus
+    #   params:
+    #     ms: =recipe.ms
+    #     output_dir: '{recipe.dir-out}/albus'
 
     predict-5:
       _use: lib.steps.wsclean.predict
