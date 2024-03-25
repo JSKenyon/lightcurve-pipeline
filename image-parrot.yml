@@ -206,7 +206,7 @@ ratt-parrot:
         dec0: 54.3116944deg
         max_radius_deg: 1.5
         catalogs: 
-          src_L: [obs-l1-qc2/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
+          src_L: [/home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/obs-l1-qc2/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
 
     save-ms-info:
       cab: save-ms-info
@@ -297,7 +297,6 @@ ratt-parrot:
         catalog: =steps.make-master-catalog.master_catalog
         regfile: '{current.outdir}/lc{recipe.htc_cadence}-{recipe.obs}.reg'
         statsfile: '{current.outdir}/lc{recipe.htc_cadence}-{recipe.obs}.stats.p'
-        interesting_timestamps: known-pulses.txt
         output_file_label: "-{recipe.obs}"
         srctype: P
         minflux: 3uJy
@@ -305,7 +304,6 @@ ratt-parrot:
         within: =recipe.lightcurves-within
         nsrc: 50000
         ncpu: 1  #=root.ncpu
-        # beaminfo: =steps.derive-obs-specific-power-beam.beaminfo
         fluxcols: =recipe.catalog-flux-columns
         plot_title: =IF(recipe.publish-plots, NOSUBST(recipe.publish-plot-title), UNSET)
       skip_if_outputs: fresh
