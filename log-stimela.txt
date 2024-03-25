@@ -1,6 +1,0 @@
-2024-03-25 10:43:34 STIMELA INFO: saving config dependencies to ./stimela.config.deps
-2024-03-25 10:43:34 STIMELA INFO: will load recipe/config file image-parrot.yml
-2024-03-25 10:43:43 STIMELA INFO: found single recipe 'ratt-parrot', selecting it implicitly
-2024-03-25 10:43:44 STIMELA INFO: pre-validating the recipe
-2024-03-25 10:43:45 STIMELA INFO: recipe logs will be saved under /home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/obs-l1-qc2/logs/log-20240325-104334
-2024-03-25 10:43:45 STIMELA INFO: saved recipe dependencies to /home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/obs-l1-qc2/logs/log-20240325-104334/stimela.recipe.deps
