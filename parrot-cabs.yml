@@ -138,6 +138,7 @@ cabs:
         dtype: Directory
         mkdir: true
         must_exist: false
+        write_parent_dir: true
 
   extract-model-spectrum:
     flavour: python

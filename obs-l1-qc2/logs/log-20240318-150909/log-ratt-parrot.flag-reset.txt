@@ -1,6 +1,0 @@
-2024-03-18 15:09:22 STIMELA.ratt-parrot.flag-reset INFO: ### validated inputs
-2024-03-18 15:09:22 STIMELA.ratt-parrot.flag-reset INFO: cab flagmanager:
-2024-03-18 15:09:22 STIMELA.ratt-parrot.flag-reset INFO:   ms = ../msdir/SN2023ixf_noauto_1GC.ms
-2024-03-18 15:09:22 STIMELA.ratt-parrot.flag-reset INFO:   mode = restore
-2024-03-18 15:09:22 STIMELA.ratt-parrot.flag-reset INFO:   versionname = Unresolved(recipe.initial-flag-version)
-2024-03-18 15:09:22 STIMELA.ratt-parrot.flag-reset ERROR: step 'flag-reset': invalid inputs: 'versionname'

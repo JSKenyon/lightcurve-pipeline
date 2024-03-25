@@ -1,8 +1,8 @@
 taskname           = "flagmanager"
-vis                =  "../msdir/SN2023ixf_noauto_1GC.ms"
-mode               =  "save"
+vis                =  "/home/kenyon/ATA_experiments/original_data/SN2023ixf_noauto_1GC.ms"
+mode               =  "restore"
 versionname        =  "initial_flags"
 oldname            =  ""
 comment            =  ""
 merge              =  "replace"
-#flagmanager(vis="../msdir/SN2023ixf_noauto_1GC.ms",mode="save",versionname="initial_flags",oldname="",comment="",merge="replace")
+#flagmanager(vis="/home/kenyon/ATA_experiments/original_data/SN2023ixf_noauto_1GC.ms",mode="restore",versionname="initial_flags",oldname="",comment="",merge="replace")

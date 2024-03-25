@@ -29,7 +29,7 @@ ratt-parrot:
     dirs:
       ms: msdir       # MSs live here
       temp: "{config.run.env.HOME}/tmp"   # temp files go here
-      base: .            # base project directory -- directory of recipe by default, but see below
+      base: /home/kenyon/ATA_experiments/lightcurve_extraction/working_dir            # base project directory -- directory of recipe by default, but see below
 
     # _chan1x: =recipe.chan1 - 1       # end channel, inclusive -- helper variable to form CASA spw
     casa-spw: 0 #"0:{recipe.chan0}~{recipe._chan1x}"  # CASA spw parameter
@@ -140,24 +140,14 @@ ratt-parrot:
       params:
         column: DATA
         niter: 15000
-#        fits-mask: =IF(recipe.automask, UNSET, recipe.deep-mask-1)
         auto-threshold: 2
         auto-mask: 4
-        #        no-reorder: true
 
     mask-1:
       recipe: make_masks
       params:
         restored-image: "{previous.restored.mfs}"
         prefix: "{previous.prefix}"
-
-    # image-1-2:
-    #   _use: lib.steps.wsclean.rrat
-    #   params:
-    #     column: DATA
-    #     niter: 150000
-    #     fits-mask: =steps.mask-1.mask
-    #     auto-threshold: 1  
 
     flagsummary-1:
       cab: casa.flagsummary
@@ -179,11 +169,10 @@ ratt-parrot:
           time_chunk: 0
           select_uv_range: [0,0]
         output:
-          flags: false
+          flags: true
         K:
           time_interval: 0
           type: delay_and_offset
-          # freq_interval: 0
 
     flagsummary-2:
       cab: casa.flagsummary
@@ -194,243 +183,10 @@ ratt-parrot:
     image-2:
       _use: lib.steps.wsclean.rrat
       params:
-        fits-mask: =IF(recipe.automask, UNSET, steps.mask-1.mask)
         auto-threshold: 1
-
-#    mask-2:
-#      recipe: make_masks
-#      params:
-#        restored-image: "{previous.restored.mfs}"
-#        prefix: "{previous.prefix}"
-#        threshold: 5
-
-#    dd_predict-2:
-#      cab: crystalball
-#      info: "Predicts off-axis source into separate column"
-#      params:
-#        ms: '{recipe.ms}'
-#        within: dd-problem-source.reg
-#        output-column: DIR1_DATA
-#        num-sources: 1000
-#        sky-model: "{steps.image-2.source-list}"
-
-#    upsample-2:
-#      cab: smops
-#      params:
-#        ms: =recipe.ms
-#        input-prefix: =recipe.image-prefix
-#        num-threads: =root.ncpu
-#        channels-out: 256
-#        polynomial-order: 4
-#        output-prefix: "{recipe.image-prefix}-upsampled"
-
-    # upsample-fix-2:
-    #   recipe: upsample-fix
-    #   params:
-    #     files: =GLOB("{recipe.image-prefix}-upsampled*model*fits")
-
-#    predict-2:
-#      _use: lib.steps.wsclean.predict
-#      params:
-#        ms: '{recipe.ms}'
-#        prefix: '{steps.upsample-2.output-prefix}'
-#        nchan: '{steps.upsample-2.channels-out}'
-
-#    predict-copycol-3:
-#      skip: =not recipe.copy-model-columns
-#      cab: msutils.copycol
-#      params:
-#        msname: =recipe.ms
-#        fromcol: MODEL_DATA
-#        tocol: MODEL{info.suffix}_DATA
-
-#    dd_selfcal-3:
-#      _use: lib.steps.quartical.k-de
-#      params:
-#        output:
-#          subtract_directions: [1]
-
-#    ddcc_selfcal-3:
-#      cab: cubical
-#      params:
-#        parset: cc-parsets/solve-kde.parset
-#        data.ms: "{recipe.ms}"
-#        out.dir: '{recipe.dir-out}/solve-kde'
-#        out.name: cc-kde
-#        model.list: MODEL{info.suffix}_DATA:DIR1_DATA
-#        out.column: SELFCAL3_DATA
-#        dist.ncpu: 12
-#      skip: true
-
-#    image-3:
-#      _use: lib.steps.wsclean.rrat
-#      params:
-#        fits-mask: =IF(recipe.automask, UNSET, steps.mask-2.mask)
-#        auto-threshold: 1
-
-#    cube-3:
-#      cab: fitstool.stack-freq-cube
-#      params:
-#        images: =steps.image-*.restored.per-band
-#        cube: "{recipe.image-prefix}-cube.fits"
-
-#    fft-image-3:
-#      cab: fft-image
-#      params:
-#        image: =steps.image-*.residual.mfs
-#        fft-image: =STRIPEXT(steps.image-*.residual.mfs) + '.fft.fits'
-#        lambda-per-arcsec: 100
-
-#    mask-3:
-#      recipe: make_masks
-#      params:
-#        restored-image: "{steps.image-3.restored.mfs}"
-#        prefix: "{steps.image-3.prefix}"
-#        threshold: 5
-
-#    dd_selfcal-3a:
-#      _use: lib.steps.quartical.k-g-de
-#      params:
-#        output:
-#          subtract_directions: [1]
-#      skip: =not recipe.ampcal
-
-#    image-3a:
-#      _use: lib.steps.wsclean.rrat
-#      params:
-#        fits-mask: =IF(recipe.automask, UNSET, steps.mask-2.mask)
-#        auto-threshold: 1
-#      skip: =not recipe.ampcal
-
-#    mask-3a:
-#      recipe: make_masks
-#      params:
-#        restored-image: "{previous.restored.mfs}"
-#        prefix: "{previous.prefix}"
-#      skip: =not recipe.ampcal
-
-#    dd_selfcal-3b:
-#      _use: lib.steps.quartical.k-g-de
-#      params:
-#        output:
-#          subtract_directions: [1]
-#      skip: =not recipe.ampcal
-
-#    image-3b:
-#      _use: lib.steps.wsclean.rrat
-#      params:
-#        fits-mask: =IF(recipe.automask, UNSET, steps.mask-2.mask)
-#        auto-threshold: 1
-#      skip: =not recipe.ampcal
-
-#    flagsummary-3:
-#      cab: casa.flagsummary
-#      params:
-#        ms: =recipe.ms
-#        spw: =recipe.casa-spw      
-
-#    upsample-3:
-#      cab: smops
-#      params:
-#        ms: =recipe.ms
-#        input-prefix: =recipe.image-prefix
-#        num-threads: =root.ncpu
-#        channels-out: 256
-#        polynomial-order: 4
-#        output-prefix: "{recipe.image-prefix}-upsampled"
-
-#    predict-3:
-#      _use: lib.steps.wsclean.predict
-#      params:
-#        ms: '{recipe.ms}'
-#        nchan: '{steps.upsample-3.channels-out}'
-#        prefix: '{steps.upsample-3.output-prefix}'
-
-#    predict-copycol-4:
-#      skip: =not recipe.copy-model-columns
-#      cab: msutils.copycol
-#      params:
-#        msname: =recipe.ms
-#        fromcol: MODEL_DATA
-#        tocol: MODEL{info.suffix}_DATA
-
-#    dd_selfcal-4:
-#      _use: lib.steps.quartical.k-de
-#      params:
-#        input_model:
-#          recipe: MODEL{info.suffix}_DATA:DIR1_DATA
-#        output:
-#          subtract_directions: [0,1]
-
-    # apply-4:
-    #   _use: lib.steps.quartical.k-de
-    #   params:
-    #     input_model:
-    #       recipe: MODEL_DATA:DIR1_DATA  # model now has DIR1 subtracted
-    #     solver:
-    #       iter_recipe: [0,0]
-    #     K:
-    #       load_from: "{steps.dd_selfcal-3.output.gain_directory}/K"
-    #     dE:
-    #       load_from: "{steps.dd_selfcal-3.output.gain_directory}/dE"
-    #     output:
-    #       subtract_directions: [0,1]
-
-#    flagres-4:
-#      cab: tricolour
-#      params:
-#        ms: =recipe.ms
-#        config: tricolour-strategies/khruschev.yaml
-#        flagging-strategy: total_power
-#        data-column: SELFCAL4_DATA
-#      skip: =not recipe.flag-on-residuals
-
-#    flagsummary-4:
-#      cab: casa.flagsummary
-#      params:
-#        ms: =recipe.ms
-#        spw: =recipe.casa-spw      
-
-#    image-4:
-#      _use: lib.steps.wsclean.rrat
-#      params:
-#        fits-mask: =IF(recipe.automask, UNSET, steps.mask-3.mask)
-#        auto-threshold: 1
-
-#    fft-image-4:
-#      cab: fft-image
-#      params:
-#        image: =steps.image-*.residual.mfs
-#        fft-image: =STRIPEXT(steps.image-*.residual.mfs) + '.fft.fits'
-#        lambda-per-arcsec: 100
-
-#    download-power-beam:
-#      cab: wget
-#      params:
-#        url: =recipe.mdv-beams-url
-#        dest: =recipe.mdv-beams
-#      skip_if_outputs: exist
-
-#    compute-power-beam:
-#      cab:  mdv-beams-to-power-beam
-#      params:
-#        mdv_beams: =recipe.mdv-beams
-#        power_beam: =recipe.power-beam
-#      skip_if_outputs: fresh
-
-#    derive-obs-specific-power-beam:
-#      cab: derive-power-beam
-#      params:
-#        cube: =steps.cube-3.cube
-#        images: =steps.image-3.restored.per-band
-#        outcube: =STRIPEXT(current.cube) + ".pbcorr.fits"
-#        power_beam: =recipe.power-beam
-#        beaminfo: "{steps.image-3.prefix}-powerbeam.p"
-#        nband: 128
-#      skip_if_outputs: fresh
+        auto-mask: 4
 
     source-catalog:
-      skip: true
       cab: bdsf.catalog
       params:
         image: =steps.image-2.restored.mfs
@@ -438,23 +194,11 @@ ratt-parrot:
         thresh_isl: 3
         rms_box: [20,5]
         rms_map: false
-        #flagging_opts: true
-        #flag_maxsize_bm: 10
         catalog_format: ascii
         outfile_gaul: =STRIPEXT(current.image) + '.gaul'
         outfile_srl: =STRIPEXT(current.image) + '.srl'
 
-#    source-catalog-spi:
-#      _use: ratt-parrot.steps.source-catalog
-#      params:
-#        image: =steps.derive-obs-specific-power-beam.outcube
-#        detection_image: =steps.image-3.restored.mfs
-#        spectralindex_do: true
-#        outfile_gaul: =STRIPEXT(current.image) + '.spi.gaul'
-#        outfile_srl: =STRIPEXT(current.image) + '.spi.srl'
-
     make-master-catalog:
-      tags: [master-catalog, never]
       cab: make-master-catalog
       params:
         master_catalog: mastercat.ecsv
@@ -462,36 +206,13 @@ ratt-parrot:
         dec0: 54.3116944deg
         max_radius_deg: 1.5
         catalogs: 
-          #U: [U-band.gaul, 0, main]
-          #L: =LIST( STRIPEXT(current.image) + '.gaul', 6, main)
-          #src_U: [U-band.srl, 6, srl]
           src_L: [obs-l1-qc2/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
-          #spi_U: [U-band.spi.gaul, 6, spi]
-          #spi_L: [L-band.spi.gaul, 6, spi]
-          #src_L: =STRIPEXT(current.image) + '.srl'
-
-        #interesting_regions: [interests.reg, agn-candidates.reg, vlbi-calibrators.reg]
-        #search_box_radec: [303.19deg, -20.492deg, 15arcsec, 40arcmin]
-        #search_box_frame: geocentricmeanecliptic
-        #search_box_label: PSR
-        #search_box_minflux: 200uJy
-
-#    augment-master-catalog:
-#      tags: [master-catalog, never]
-#      cab: augment-catalog
-#      params:
-#        catalog: mastercat.ecsv
-#        augment_catalog: SourceList-MW.ecsv
-#        augment_column: id
-#        output_column: mwid
-#        output_catalog: =current.catalog
 
     save-ms-info:
       cab: save-ms-info
       params:
         ms: =recipe.ms
         ms-info-file: '{recipe.ms}.yml'
-#      skip_if_outputs: exist
 
     ms-info:
       cab: load-ms-info
@@ -499,14 +220,7 @@ ratt-parrot:
         ms-info-file: =steps.save-ms-info.ms-info-file
       tags: [lightcurves]
 
-    # get-albus-info:
-    #   skip: true
-    #   cab: query-albus
-    #   params:
-    #     ms: =recipe.ms
-    #     output_dir: '{recipe.dir-out}/albus'
-
-    predict-5:
+    predict-2:
       _use: lib.steps.wsclean.predict
       params:
         ms: '{recipe.ms}'
@@ -543,17 +257,6 @@ ratt-parrot:
       tags: [lightcurves]
       skip_if_outputs: fresh
 
-    # image-5tf:
-    #   skip: true
-    #   _use: lib.steps.wsclean.dirty
-    #   params:
-    #     column: CORRECTED_DATA
-    #     prefix: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/images/cad{recipe.htc_cadence}'
-    #     intervals-out: =steps.ms-info.num_intervals / recipe.htc_cadence
-    #     nchan: =recipe.htfc_nband
-    #     size: =recipe.htfc_size
-    #     scale: =recipe.htfc_scale
-
     cube-4htc:
       cab: stack_time_cube
       params:
@@ -573,45 +276,6 @@ ratt-parrot:
       skip_if_outputs: fresh
       tags: [lightcurves]
 
-    # clean-cube-4htc:
-    #   cab: stack_time_cube
-    #   params:
-    #     images: =steps.image-*htc.restored.per-interval
-    #     cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-clean.fits'
-    #     ms: =recipe.ms
-    #     cadence: =recipe.htc_cadence
-    #   skip_if_outputs: fresh
-    #   tags: [lightcurves]
-
-    # cubes-5tf:
-    #   tags: [lightcurves-per-band, never]
-    #   recipe:
-    #     inputs:
-    #       bands: List[int] = =RANGE(recipe.htfc_nband)
-    #       prefix: str = =steps.image-5tf.prefix
-    #       cube-prefix: str = =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube'
-    #       lc-suffix: str = =recipe.lc-suffix
-    #     for_loop:
-    #       var: band
-    #       over: bands
-    #     steps:
-    #       stack:
-    #         cab: stack_time_cube
-    #         params:
-    #           images: =GLOB("{recipe.prefix}-t*-{recipe.band:04d}-image.fits")
-    #           cube: "{recipe.cube-prefix}{recipe.band:04d}.fits"
-    #           ms: =root.ms
-    #         skip_if_outputs: fresh
-    #       convolve:
-    #         cab: convolve_image
-    #         params:
-    #           image: =previous.cube
-    #           size_arcsec: =root.convolve.arcsec
-    #           size_sec: =root.convolve.time
-    #           outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix}.fits'
-    #         skip: =not recipe.lc-suffix 
-    #         skip_if_outputs: fresh
-
     cube-convolve:
       cab: convolve_image
       params:
@@ -622,17 +286,6 @@ ratt-parrot:
       skip: =not recipe.lc-suffix 
       skip_if_outputs: fresh
       tags: [lightcurves]
-
-    # cube-convolve-sub:
-    #   cab: convolve_image
-    #   params:
-    #     image: =steps.cube-4htc.cube
-    #     size_arcsec: =recipe.convolve-sub.arcsec
-    #     size_sec: =recipe.convolve-sub.time
-    #     outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix-sub}.fits'
-    #   skip: =not recipe.lc-suffix-sub
-    #   skip_if_outputs: fresh
-    #   tags: [lightcurves]
 
     extract-lightcurves:
       info: extracts lightcurves from convolved cube
@@ -667,63 +320,3 @@ ratt-parrot:
         outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}'
       skip_if_outputs: fresh
       tags: [lightcurves]
-
-    # extract-lightcurves-per-band:
-    #   info: extracts per-band lightcurves using the cubes-5tf output
-    #   tags: [lightcurves-per-band, never]
-    #   recipe:
-    #     inputs:
-    #       bands: List[int] = =RANGE(recipe.htfc_nband)
-    #       cube-prefix: str = =steps.cubes-5tf.cube-prefix
-    #       dir-out: str = =recipe.dir-out
-    #       catalog: str = =steps.make-master-catalog.master_catalog
-    #       obs: str = =recipe.obs
-    #       htc_cadence: int = =recipe.htc_cadence
-    #       lightcurves-within: str = =recipe.lightcurves-within
-    #       catalog-flux-columns: List[str] = =recipe.catalog-flux-columns
-    #       lc-suffix: str = =recipe.lc-suffix
-    #       nsrc: int = 100  "limit number of sources for now to 100"
-    #     for_loop:
-    #       var: band
-    #       over: bands
-    #     steps:
-    #       lc1:
-    #         _use: ratt-parrot.steps.extract-lightcurves
-    #         params:
-    #           cube: '{recipe.cube-prefix}{recipe.band:04d}.fits'
-    #           outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}-perband/band{recipe.band:04d}'
-    #           catalog: =recipe.catalog
-    #           nsrc: =recipe.nsrc
-    #       lc2:
-    #         _use: ratt-parrot.steps.extract-lightcurves
-    #         params:
-    #           cube: '{recipe.cube-prefix}{recipe.band:04d}{recipe.lc-suffix}.fits'
-    #           outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix}-perband/band{recipe.band:04d}'
-    #           catalog: =recipe.catalog
-    #           nsrc: =recipe.nsrc
-
-    # extract-model-fluxes:
-    #   skip: true
-    #   cab: extract-model-spectrum
-    #   params:
-    #     lightcurves: =GLOB("{steps.extract-lightcurves-1.outdir}/src-chunk*/src000000*.ecsv")
-    #     modelsets: =LIST(GLOB("{steps.predict-3.prefix}-????-model.fits"),
-    #                      GLOB("{steps.predict-5.prefix}-????-model.fits"))
-  
-    # extract-lightcurves-base:
-    #   _use: ratt-parrot.steps.extract-lightcurves
-    #   params:
-    #     cube: =steps.cube-convolve-sub.outimage
-    #     outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix-sub}'
-    #   skip: =not recipe.lc-suffix-sub
-    #   skip_if_outputs: fresh
-
-    # extract-lightcurves-sub:
-    #   _use: ratt-parrot.steps.extract-lightcurves
-    #   params:
-    #     cube: =steps.extract-lightcurves.cube
-    #     outdir: '{steps.extract-lightcurves.outdir}-sub{recipe.lc-suffix-sub}'
-    #     subtract: '{steps.extract-lightcurves-base.outdir}'
-    #   skip: =not recipe.lc-suffix-sub
-    #   skip_if_outputs: fresh
-        
