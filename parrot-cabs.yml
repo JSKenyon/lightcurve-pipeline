@@ -12,11 +12,7 @@ _include:
     - fitstool.yml
     - bdsf.yml
     - tigger.yml
-    - tricolour.yml
 
-  # omstimelation:
-  #   - oms-cabs-cc.yml
-  #   - oms-ddf-cabs.yml
 
 cabs:
   wsclean:
