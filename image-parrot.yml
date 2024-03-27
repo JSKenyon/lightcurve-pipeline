@@ -12,8 +12,6 @@ opts:
     symlink: log
   backend:
     select: singularity
-    singularity:
-#      auto_update: true
     rlimits:
       NOFILE: 100000  # set high limit on number of open files
 
