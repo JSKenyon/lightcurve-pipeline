@@ -1,20 +1,14 @@
 obs:
-  L1:
-    ms: /home/kenyon/ATA_experiments/original_data/SN2023ixf_noauto_1GC.ms   # L deep 1
+  ATA_test:
+    ms: /home/kenyon/ATA_experiments/original_data/SN2023ixf_noauto_1GC.ms
     dirs.sub: obs-l1
-    band: L
-
-band:
-  L:
     wsclean_size: 2048
+    wsclean_nchan: 8
+    weight: "briggs 0"
     pixel_scale: 3
     htc_size: 2048
     htc_scale: 3arcsec
     htc_cadence: 20
-    wsclean_nchan: 8
-    lib.steps.ddfacet.base.params.Image.Cell: 0.8
-    psf_size: 6
-    weight: "briggs 0"
     lightcurves-within: 1deg
-    initial-flag-version: "initial_flags"
+    initial-flag-version: "original_flags"
     catalog-flux-columns: [flux_src_L]

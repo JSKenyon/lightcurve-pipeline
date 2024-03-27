@@ -25,9 +25,9 @@ ratt-parrot:
     log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'          # put logs into output dir
     # some more directory assignments
     dirs:
-      ms: msdir       # MSs live here
-      temp: "{config.run.env.HOME}/tmp"   # temp files go here
-      base: /home/kenyon/ATA_experiments/lightcurve_extraction/working_dir            # base project directory -- directory of recipe by default, but see below
+      ms: msdir  # MSs live here
+      temp: "{config.run.env.HOME}/tmp"  # temp files go here
+      base: /home/kenyon/ATA_experiments/lightcurve_extraction/working_dir  # base project directory -- directory of recipe by default
 
     # _chan1x: =recipe.chan1 - 1       # end channel, inclusive -- helper variable to form CASA spw
     casa-spw: 0 #"0:{recipe.chan0}~{recipe._chan1x}"  # CASA spw parameter
@@ -37,20 +37,20 @@ ratt-parrot:
     lc-suffix-sub: =IF(recipe.convolve-sub.arcsec or recipe.convolve-sub.time, "-{recipe.convolve-sub.time:.0f}s-{recipe.convolve-sub.arcsec:.0f}asec", "")
 
   assign_based_on:
-    _include: parrot-observation-sets.yml
+    _include: datasets.yml
 
   inputs:
     obs:
-      choices: [L1]
-      info: "Selects observation, see parrot-observation-sets.yml for list of observations"
-      default: L1
+      choices: [ATA_test]
+      info: "Selects observation, see datasets.yml for list of observations."
+      default: ATA_test
     output-suffix:
       dtype: str
       default: '-qc2'
     variant:
       dtype: str
       default: ''
-    dir.out: 
+    dir.out:
       dtype: str
     htc_cadence:
       dtype: int
@@ -82,7 +82,7 @@ ratt-parrot:
       time:
         dtype: float
         default: 0
-    ddf-precluster-file: 
+    ddf-precluster-file:
       dtype: File
     automask:
       dtype: bool
@@ -90,7 +90,7 @@ ratt-parrot:
     mad_flag:
       dtype: bool
       default: false
-      aliases: 
+      aliases:
         - (quartical).mad_flags.enable
     flag-on-residuals:
       dtype: bool
@@ -108,22 +108,22 @@ ratt-parrot:
     ms:
       - (wsclean).ms
       - (quartical).input_ms.path
-    weight: 
+    weight:
       - (wsclean).weight
       - (wsclean_pol).weight
     minuv-l:
       - (wsclean).minuv-l
     taper-inner-tukey:
       - (wsclean).taper-inner-tukey
-    
+
   steps:
     flag-save:
+      tags: [init, never]
       cab: casa.flagman
       params:
         ms: =recipe.ms
         mode: save
         versionname: =recipe.initial-flag-version
-      skip: false
 
     flag-reset:
       cab: casa.flagman
@@ -131,7 +131,7 @@ ratt-parrot:
         ms: =recipe.ms
         mode: restore
         versionname: =recipe.initial-flag-version
-  
+
     image-1:
       info: "auto-masked deep I clean"
       _use: lib.steps.wsclean.rrat
@@ -151,7 +151,7 @@ ratt-parrot:
       cab: casa.flagsummary
       params:
         ms: =recipe.ms
-        spw: =recipe.casa-spw      
+        spw: =recipe.casa-spw
 
     predict-1:
       _use: lib.steps.wsclean.predict
@@ -160,7 +160,7 @@ ratt-parrot:
         prefix: '{steps.image-1.prefix}'
         nchan: '{steps.image-1.nchan}'
 
-    selfcal-2: 
+    selfcal-2:
       _use: lib.steps.quartical.k
       params:
         input_ms:
@@ -176,7 +176,7 @@ ratt-parrot:
       cab: casa.flagsummary
       params:
         ms: =recipe.ms
-        spw: =recipe.casa-spw      
+        spw: =recipe.casa-spw
 
     image-2:
       _use: lib.steps.wsclean.rrat
@@ -203,7 +203,7 @@ ratt-parrot:
         ra0: 210.9107505deg
         dec0: 54.3116944deg
         max_radius_deg: 1.5
-        catalogs: 
+        catalogs:
           src_L: [/home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/obs-l1-qc2/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
 
     save-ms-info:
@@ -233,7 +233,7 @@ ratt-parrot:
 
     subtract_model:
       cab: taql.update
-      params: 
+      params:
         ms: "{recipe.ms}"
         commands: =LIST("set", "CORRECTED_DATA={steps.image-2.column}-MODEL_DATA")
 
@@ -281,7 +281,7 @@ ratt-parrot:
         size_arcsec: =recipe.convolve.arcsec
         size_sec: =recipe.convolve.time
         outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix}.fits'
-      skip: =not recipe.lc-suffix 
+      skip: =not recipe.lc-suffix
       skip_if_outputs: fresh
       tags: [lightcurves]
 
