@@ -172,14 +172,13 @@ lightcurve-pipeline:
         outfile_srl: =STRIPEXT(current.image) + '.srl'
 
     # NB: This cab requires manual specification of the catalogue path. 
-    # This needs to be simplified and automated. The same is true of the
-    # field centre.
+    # This needs to be simplified and automated.
     make-master-catalog:
       cab: make-master-catalog
       params:
         master_catalog: =recipe.dir-out + '/mastercat.ecsv'
-        ra0: 210.9107505deg
-        dec0: 54.3116944deg
+        ra0: '{recipe.field_ra}'
+        dec0: '{recipe.field_dec}'
         max_radius_deg: 1.5
         catalogs:
           bdsf: [/home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/ATA_test/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
