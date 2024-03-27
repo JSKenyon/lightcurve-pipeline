@@ -15,14 +15,14 @@ opts:
     rlimits:
       NOFILE: 100000  # set high limit on number of open files
 
-ratt-parrot:
-  name: ratt-parrot
-  info: "imaging of RRAT PARROT follow-up observations"
+lightcurve-pipeline:
+  name: lightcurve-pipeline
+  info: "Generic pipeline for extracting lightcurves from interferometer data."
 
   assign:
-    dir-out: '{recipe.dirs.base}/{recipe.dirs.sub}{recipe.output-suffix}'                     # output products go here
+    dir-out: '{recipe.dirs.base}/{recipe.dirs.sub}{recipe.output-suffix}'  # output products go here
     image-prefix: '{recipe.dir-out}/im{info.suffix}{recipe.variant}/im{info.suffix}{recipe.variant}'  # prefix for image names at each step
-    log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'          # put logs into output dir
+    log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'  # put logs into output dir
     # some more directory assignments
     dirs:
       ms: msdir  # MSs live here
@@ -34,7 +34,6 @@ ratt-parrot:
 
     # extra lightcurve suffix, added if convolving
     lc-suffix: =IF(recipe.convolve.arcsec or recipe.convolve.time, "-{recipe.convolve.time:.0f}s-{recipe.convolve.arcsec:.0f}asec", "")
-    lc-suffix-sub: =IF(recipe.convolve-sub.arcsec or recipe.convolve-sub.time, "-{recipe.convolve-sub.time:.0f}s-{recipe.convolve-sub.arcsec:.0f}asec", "")
 
   assign_based_on:
     _include: datasets.yml
@@ -46,12 +45,10 @@ ratt-parrot:
       default: ATA_test
     output-suffix:
       dtype: str
-      default: '-qc2'
+      default: ''
     variant:
       dtype: str
       default: ''
-    dir.out:
-      dtype: str
     htc_cadence:
       dtype: int
       default: 1
@@ -64,10 +61,6 @@ ratt-parrot:
     htc_weight:
       dtype: str
       default: natural
-    ampcal:
-      info: do a step of amplitude calibration
-      dtype: bool
-      default: false
     convolve:
       arcsec:
         dtype: float
@@ -75,29 +68,11 @@ ratt-parrot:
       time:
         dtype: float
         default: 120
-    convolve-sub:
-      arcsec:
-        dtype: float
-        default: 0
-      time:
-        dtype: float
-        default: 0
-    ddf-precluster-file:
-      dtype: File
-    automask:
-      dtype: bool
-      default: false
     mad_flag:
       dtype: bool
       default: false
       aliases:
         - (quartical).mad_flags.enable
-    flag-on-residuals:
-      dtype: bool
-      default: false
-    copy-model-columns:
-      dtype: bool
-      default: true
     publish-plots:
       dtype: bool
       default: false
@@ -160,7 +135,7 @@ ratt-parrot:
         prefix: '{steps.image-1.prefix}'
         nchan: '{steps.image-1.nchan}'
 
-    selfcal-2:
+    selfcal-1:
       _use: lib.steps.quartical.k
       params:
         input_ms:
@@ -196,15 +171,18 @@ ratt-parrot:
         outfile_gaul: =STRIPEXT(current.image) + '.gaul'
         outfile_srl: =STRIPEXT(current.image) + '.srl'
 
+    # NB: This cab requires manual specification of the catalogue path. 
+    # This needs to be simplified and automated. The same is true of the
+    # field centre.
     make-master-catalog:
       cab: make-master-catalog
       params:
-        master_catalog: mastercat.ecsv
+        master_catalog: =recipe.dir-out + '/mastercat.ecsv'
         ra0: 210.9107505deg
         dec0: 54.3116944deg
         max_radius_deg: 1.5
         catalogs:
-          src_L: [/home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/obs-l1-qc2/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
+          bdsf: [/home/kenyon/ATA_experiments/lightcurve_extraction/working_dir/ATA_test/im2/im2-MFS-image.srl, 6, main]  # HACKY!!
 
     save-ms-info:
       cab: save-ms-info
@@ -244,10 +222,7 @@ ratt-parrot:
         prefix: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/images/cad{recipe.htc_cadence}'
         intervals-out: =steps.ms-info.num_intervals / recipe.htc_cadence
         nchan: 1
-        niter: 0 # 10000
-        auto-threshold: 1
-        threshold: 0
-        mgain: 1
+        niter: 0
         weight: '{recipe.htc_weight}'
         size: '{recipe.htc_size}'
         scale: '{recipe.htc_scale}'
@@ -309,7 +284,7 @@ ratt-parrot:
 
     extract-lightcurves-1:
       info: extracts lightcurves from raw cube
-      _use: ratt-parrot.steps.extract-lightcurves
+      _use: lightcurve-pipeline.steps.extract-lightcurves
       skip: false
       params:
         cube: =steps.cube-4htc.cube

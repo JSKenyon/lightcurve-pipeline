@@ -1,7 +1,7 @@
 obs:
   ATA_test:
     ms: /home/kenyon/ATA_experiments/original_data/SN2023ixf_noauto_1GC.ms
-    dirs.sub: obs-l1
+    dirs.sub: ATA_test
     wsclean_size: 2048
     wsclean_nchan: 8
     weight: "briggs 0"
@@ -11,4 +11,4 @@ obs:
     htc_cadence: 20
     lightcurves-within: 1deg
     initial-flag-version: "original_flags"
-    catalog-flux-columns: [flux_src_L]
+    catalog-flux-columns: [flux_bdsf]
