@@ -10,7 +10,7 @@ obs:
     pixel_scale: 3
     htc_size: 2048
     htc_scale: 3arcsec
-    htc_cadence: 20
+    htc_cadence: 1
     lightcurves-within: 1deg
     initial-flag-version: "original_flags"
     catalog-flux-columns: [flux_bdsf]
