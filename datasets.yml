@@ -6,6 +6,8 @@ obs:
     field_dec: 54.3116944deg
     wsclean_size: 2048
     wsclean_nchan: 8
+    wsclean_auto_mask: 4
+    wsclean_auto_thesh: 2
     weight: "briggs 0"
     pixel_scale: 3
     htc_size: 2048

@@ -376,7 +376,6 @@ lib:
           dtype: str
         skip-regions:
           dtype: File
-#          default: 'rrat.reg'
       
       aliases:
         # inputs
@@ -385,8 +384,6 @@ lib:
         dilate: mask.dilate
         # outputs
         mask: mask.mask
-#        except-rrat: mask-except-rrat.mask
- #       mul: mask-mul.mask
 
       defaults:
         threshold: 6.5
@@ -397,48 +394,6 @@ lib:
           cab: breizorro
           params:
             mask: '{recipe.prefix}-mask.fits'
-
-#        mask-except-rrat:
-#          cab: breizorro
-#          info: "makes mask which contains everything except the dwarf"
-#          params:
-#            mask-image: '{previous.mask}'
-#            subtract: '{recipe.skip-regions}'
-#            number-islands: true
-#            mask: '{recipe.prefix}-mask-nodwarf.fits'
-
-#        mask-mul:
-#          cab: breizorro
-#          info: "makes mask which is 1 everywhere except at the dwarf"
-#          params:
-#            mask-image: '{steps.mask.mask}'
-#            subtract: '{steps.mask-except-rrat.mask}'
-#            invert: true
-#            mask: '{recipe.prefix}-multiplicative-mask.fits'
-
-    # upsample-fix:
-    #   inputs:
-    #     files:
-    #       dtype: List[File]
-    #   for_loop:
-    #     var: ff
-    #     over: files
-    #     scatter: 4
-    #   steps:
-    #     fix:
-    #       cab:
-    #         flavour: python-code
-    #         inputs:
-    #           filename:
-    #             dtype: File
-    #         command: |
-    #           from astropy.io import fits
-    #           ff = fits.open(filename)
-    #           ff[0].data[ff[0].data==1] = 0
-    #           ff.writeto(filename, overwrite=True)
-    #           print("wrote {filename}")
-    #       params:
-    #         filename: =recipe.ff
 
   steps: 
     wsclean:
@@ -472,10 +427,10 @@ lib:
           niter: 1000000
           mgain: 0.9
           nmiter: 10
-          auto-threshold: 3
+          auto-threshold: =recipe.wsclean_auto_thresh
           baseline-averaging: 12
           no-update-model-required: true
-          auto-mask: =IF(recipe.automask, 5, UNSET)
+          auto-mask: =IF(current.fits-mask, UNSET, recipe.wsclean_auto_mask)
           fit-beam: true
           elliptical-beam: true
           join-channels: true

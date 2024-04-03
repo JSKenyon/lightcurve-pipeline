@@ -120,9 +120,6 @@ lightcurve-pipeline:
       _use: lib.steps.wsclean.rrat
       params:
         column: DATA
-        niter: 15000
-        auto-threshold: 2
-        auto-mask: 4
 
     mask-1:
       info: |
@@ -175,13 +172,12 @@ lightcurve-pipeline:
 
     image-2:
       info: |
-        Image and deconvolve the selfcal corrected data using wsclean. Masking
-        and thresholding are handled automatically by wsclean. This may not
-        work in all cases.
+        Image and deconvolve the selfcal corrected data using wsclean and a
+        fits mask.
       _use: lib.steps.wsclean.rrat
       params:
+        fits-mask: =steps.mask-1.mask
         auto-threshold: 1
-        auto-mask: 4
 
     source-catalog:
       info: |
@@ -248,7 +244,7 @@ lightcurve-pipeline:
         msname: =recipe.ms
         colname: CORRECTED_DATA
 
-    subtract_model:
+    subtract-model:
       info: |
         Subtract the model visibilities from the corrected data to produce the
         corrected residuals.
@@ -257,7 +253,7 @@ lightcurve-pipeline:
         ms: "{recipe.ms}"
         commands: =LIST("set", "CORRECTED_DATA={steps.image-2.column}-MODEL_DATA")
 
-    image-4htc:
+    htc-image-1:
       info: |
         Use wsclean to create a series of images corresponding to time
         intervals. Ideally, this will be an image per unique time, but this
@@ -277,12 +273,12 @@ lightcurve-pipeline:
       tags: [lightcurves]
       skip_if_outputs: fresh
 
-    cube-4htc:
+    htc-stack-1:
       info: |
         Stack a series of images into a single cube.
       cab: stack_time_cube
       params:
-        images: =steps.image-*htc.dirty.per-interval
+        images: =steps.htc-image*.dirty.per-interval
         cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-dirty.fits'
         ms: =recipe.ms
         cadence: =recipe.htc_cadence
@@ -308,7 +304,7 @@ lightcurve-pipeline:
         be matched to the temporal extent of features of interest.
       cab: convolve_image
       params:
-        image: =steps.cube-4htc.cube
+        image: =steps.htc-stack-1.cube
         size_arcsec: =recipe.convolve.arcsec
         size_sec: =recipe.convolve.time
         outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix}.fits'
@@ -323,7 +319,7 @@ lightcurve-pipeline:
       skip: =not recipe.lc-suffix # skip if lc-suffix is not set: we don't make a convolved cube then
       cab: extract_lightcurves
       params:
-        cube: =IF(recipe.lc-suffix, steps.cube-convolve.outimage, steps.cube-4htc.cube)
+        cube: =IF(recipe.lc-suffix, steps.cube-convolve.outimage, steps.htc-stack-1.cube)
         outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix}'
         catalog: =steps.make-master-catalog.master_catalog
         regfile: '{current.outdir}/lc{recipe.htc_cadence}-{recipe.obs}.reg'
@@ -346,7 +342,7 @@ lightcurve-pipeline:
       _use: lightcurve-pipeline.steps.extract-lightcurves
       skip: false
       params:
-        cube: =steps.cube-4htc.cube
+        cube: =steps.htc-stack-1.cube
         outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}'
       skip_if_outputs: fresh
       tags: [lightcurves]
