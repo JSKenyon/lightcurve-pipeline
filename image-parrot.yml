@@ -117,9 +117,9 @@ lightcurve-pipeline:
       info: |
         Image and deconvolve the data using wsclean. Masking and thresholding
         are handled automatically by wsclean. This may not work in all cases.
-      _use: lib.steps.wsclean.rrat
+      _use: lib.steps.wsclean.image_column
       params:
-        column: DATA
+        column: DATA  # Start from the contents of the DATA column.
 
     mask-1:
       info: |
@@ -150,17 +150,9 @@ lightcurve-pipeline:
     selfcal-1:
       info: |
         Use quartical to perform basic selfcal. Solves for a delay and phase
-        term per scan.
+        term per scan. Note that the selfcal step may require tuning based
+        on the field and instrument in question.
       _use: lib.steps.quartical.k
-      params:
-        input_ms:
-          time_chunk: 0
-          select_uv_range: [0,0]
-        output:
-          flags: true
-        K:
-          time_interval: 0
-          type: delay_and_offset
 
     flagsummary-2:
       info: |
@@ -174,7 +166,7 @@ lightcurve-pipeline:
       info: |
         Image and deconvolve the selfcal corrected data using wsclean and a
         fits mask.
-      _use: lib.steps.wsclean.rrat
+      _use: lib.steps.wsclean.image_column
       params:
         fits-mask: =steps.mask-1.mask
         auto-threshold: 1
@@ -195,7 +187,7 @@ lightcurve-pipeline:
 
     make-master-catalog:
       info: |
-        Create a single master catalog is .ecsv format. This can be used to
+        Create a single master catalog in .ecsv format. This can be used to
         merge image-based pybdsf catalogues with other catalogues of known or
         interesting sources.
       cab: make-master-catalog

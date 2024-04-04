@@ -15,10 +15,6 @@ _include:
 
 
 cabs:
-  wsclean:
-    inputs:
-      reorder:
-        dtype: bool
   wget:
     command: wget
     inputs:
@@ -444,7 +440,7 @@ lib:
           pol: IQUV
           mgain: 0.9
       
-      rrat:
+      image_column:
         _use:
           - lib.steps.wsclean.image
         params:
@@ -453,7 +449,7 @@ lib:
           save-source-list: true
           column: SELFCAL{info.suffix}_DATA
       
-      rrat-pol:
+      image_column_pol:
         _use:
           - lib.steps.wsclean.image_pol
         params:
@@ -484,85 +480,15 @@ lib:
           solver:
             terms: [K]
             iter_recipe: [50]
-            propagate_flags: true
-            robust: false
           output:
             gain_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
             log_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
-            overwrite: true
             products: [corrected_data]
             columns: =LIST("SELFCAL{info.suffix}_DATA")
-            flags: true
-            apply_p_jones_inv: false
           mad_flags:
             enable: =root.mad_flag 
             threshold_bl: 8
-            threshold_global: 1000
-            max_deviation: 1000
           K:
-            time_interval: 1
+            time_interval: 0
             freq_interval: 0
             type: delay_and_offset
-            initial_estimate: false
-
-      k-de:
-        _use: lib.steps.quartical.k
-        params:
-          input_model:
-            recipe: MODEL{info.suffix}_DATA~DIR1_DATA:DIR1_DATA
-          solver:
-            terms: [K,dE]
-            iter_recipe: [25,25,25,25,25]
-          output:
-            products: [corrected_residual]
-            subtract_directions: [0,1]
-          dE:
-            direction_dependent: true
-            time_interval: 16
-            freq_interval: 128
-            type: complex
-
-      k-de-tec:
-        _use: lib.steps.quartical.k-de
-        params:
-          solver:
-            terms: [K,dK,TEC,dE]
-            iter_recipe: [25,25,25,25,25,25,25,25,25,25,25,25,25]
-          TEC:
-            direction_dependent: true
-            time_interval: 1
-            freq_interval: 0
-            type: tec
-          dK:
-            direction_dependent: true
-            time_interval: 1
-            freq_interval: 0
-            type: delay
-            initial_estimate: false
-
-      k-g-de:
-        _use: lib.steps.quartical.k-de
-        params:
-          solver:
-            terms: [K,G,dE]
-            iter_recipe: [25,25,25,25,25,25,25]
-          G:
-            time_interval: 1
-            freq_interval: 0
-            type: diag_complex
-
-    ddfacet:
-      base:
-        params:
-          Data.MS: '{recipe.ms}'
-          Output.Name: '{recipe.image-prefix}'
-          Data.ColName: CORRECTED_DD_DATA
-          Image.Cell: '{recipe.pixel_scale}'
-          Cache.Dir: '{config.run.env.HOME}/tmp'
-      ssd2:
-        params:
-          Mask.Auto: false
-    killms:
-      base:
-        params:
-          InCol: CORRECTED_DD_DATA
