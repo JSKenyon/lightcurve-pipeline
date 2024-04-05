@@ -1,81 +1,69 @@
-# parrot-stew-recipes
+# Lightcurve Pipeline
 
-Recipes etc. for the RATT PARROT data reduction 
+This repository contains a simple pipeline recipe for extracting lightcurves
+from interferomter data. It is based on
+https://github.com/ratt-ru/parrot-stew-recipes. The purpose of this recipe is
+to provide a starting point for more sophisticated and potentially telescope
+specific pipelines.
 
-## 1GC 
+## 1GC
 
-You will need to install CARACal 1.0.6+ (https://github.com/caracal-pipeline/caracal) for the 1GC processing -- see ``caracal-configs`` for config files.
+This recipe presumes that the data has already been had 1GC calibration
+solutions applied i.e. it commences from the the standard self-cal loop.
+Additionally, at present it requires the target to be extracted i.e. does
+not handle field selection.
 
-Once 1GC has been done and the target MS has been extracted, proceed to the selfcal/lightcurve recipes
+1GC can be accomplished using CARACal 1.0.6+
+(https://github.com/caracal-pipeline/caracal).
 
-## Recipe installation
+## Installation
 
-The entire post-1GC workflow is implemented as a Stimela recipe (https://stimela.readthedocs.io), and should be fully reproducible given a big enough compute node with a Singularity installation.
+The pipline is implemented as a Stimela recipe (https://stimela.readthedocs.io),
+and should be portable/reproducible given adequate hardware.
 
-Prerequisites:
+Requirements:
 
-*   stimela 2.0 (https://github.com/caracal-pipeline/stimela), tag ``parrot1``, or version 2.0rc8
+*   stimela 2.0 (https://github.com/caracal-pipeline/stimela)
 
-*   cult-cargo (https://github.com/caracal-pipeline/cult-cargo), tag ``parrot1``, or version 0.2.0
+*   cult-cargo (https://github.com/caracal-pipeline/cult-cargo)
 
-    Since stimela 2 and the associated cult-cargo package were in pre-release at time of publication, we specify a git tag here rather than a version. Subsequent versions may also work, but are not guaranteed to, given the code churn inherent to pre-releases.
+    These packages are still in a pre-release state at the time of writing.
+    Consequently, it is best to install the master branches to ensure all the
+    required features are avaialble.
 
-    To install the tagged versions, create a virtual environment, then do e.g.:
+    To install the master branches, create a virtual environment, then do e.g.:
 
     ```
-    pip install git+https://github.com/caracal-pipeline/stimela.git@parrot1
-    pip install git+https://github.com/caracal-pipeline/cult-cargo.git@parrot1
+    pip install git+https://github.com/caracal-pipeline/stimela.git
+    pip install git+https://github.com/caracal-pipeline/cult-cargo.git
     ```
 
-*   The ``omstimelation`` (https://github.com/o-smirnov/omstimelation) recipe collection, tag ``parrot1``
+*   This recipe collections (https://github.com/joesbright/parrot-stew-recipes).
 
-*   This recipe collection (https://github.com/ratt-ru/parrot-stew-recipes), tag ``parrot1``.
-
-    The collections are not formal packages (at time of writing) and don't need to be (and can't be) pip installed. Rather, just check out appropriate tags/branches from github as follows:
+    Note that this is not an installable Python package so simply cloning it
+    is sufficient.
 
     ```
-    git clone https://github.com/ratt-ru/parrot-stew-recipes -b parrot1
-    cd parrot-stew-recipes
-    git clone https://github.com/o-smirnov/omstimelation -b parrot1
+    git clone https://github.com/ratt-ru/parrot-stew-recipes -b simple-parrot
     ```
 
-You're now all set to go.
+## Configuration
 
-## Selfcal & dynamic imaging 
+Some components of the pipeline will need to be configured for the data in
+question. The `datasets.yml` file contains the majority of the regularly
+changed parameters. However, any parameter can be adjusted by modifying the
+contents of `lightcurve-pipeline.yml`.
 
-The conjunction observation needs to be processed scan by scan. There is a "preparation" recipe, which splits out one scan into a per-scan MS, and updates field/UVW coordinates:
+## Running
 
-```
-$ stimela run jove-prepare.yml scan=4
-```
-
-Then there is the a selfcal recipe, which does imaging and selfcal on one (previously prepared) per-scan MS:
-
-```
-$ stimela run jove-pol.yml scan=4
-```
-
-Finally, there is a wrapper recipe, which can be used to execute the above two recipes in a loop over multiple scans:
+The first step is to run the init steps of the pipeline. These steps are
+typically run once and never again. This can be accomplished using:
 
 ```
-$ stimela run jove-pol-loop.yml                                       # prepares and selfcals all scans 
-$ stimela run jove-pol-loop.yml scan-list=[4, 6, 8]                   # prepares and selfcals specific scans
-$ stimela run jove-pol-loop.yml scan-list=[4, 6, 8] -s jove-prepare   # prepares speciic scans
-$ stimela run jove-pol-loop.yml scan-list=[4, 6, 8] -s jove-pol       # runs selfcal on speciic scans
+stimela -C run lightcurve-pipline.yml -t init
 ```
 
-## Selfcal and lightcurve extraction for the follow-up observations
-
-The recipe uses static deconvolution masks. Extract them first using ``tar zxvf masks.tgz``.
-
-Run the imaging recipe, specifying a particular observation via the ``obs`` input:
-
+Thereafter the, remainder of the pipeline can be run using:
 ```
-$ stimela run image-parrot.yml obs=U2
+stimela -C run lightcurve-pipline.yml
 ```
-
-See ``parrot-observation-sets.yml`` for a list of observations.
-
-A copy of ``mastercat.ecsv`` is provided in the repository. This catalog can also be created via the ``make-master-catalog`` step, based of source finder outputs from multiple observations.
-
-

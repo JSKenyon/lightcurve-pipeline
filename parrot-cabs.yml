@@ -181,32 +181,6 @@ cabs:
         dtype: File
         required: true
 
-  augment-catalog:
-    flavour: python
-    command: catalog_utils.augment_catalog
-    inputs:
-      catalog: 
-        dtype: File
-        required: true
-      augment_catalog: 
-        dtype: File
-        required: true
-      augment_column: 
-        dtype: str
-        required: true
-      xmatch_arcsec: 
-        dtype: float
-        default: 6 
-      coord_column: 
-        default: pos
-      unmatched_value: 
-        default: ''
-      output_column: 
-        dtype: str
-    outputs:
-      output_catalog: 
-        dtype: File
-
   save-ms-info:
     flavour: python-code
     name: save-ms-info
@@ -241,28 +215,6 @@ cabs:
     outputs:
       num_intervals:
         dtype: int
-
-  get-parang-range:
-    command: parang_finder
-    inputs:
-      ms:
-        dtype: MS
-        required: true
-        policies:
-          positional: true
-    outputs:
-      pa-start:
-        dtype: float
-      pa-end:
-        dtype: float
-    management:
-      wranglers:
-         "First parallactic angle is : (.*)": 
-            - PARSE_OUTPUT:pa-start:1:float
-            - HIGHLIGHT:green
-         "Last parallactic angle is : (.*)": 
-            - PARSE_OUTPUT:pa-end:1:float
-            - HIGHLIGHT:green
 
   make-plumber-beams:
     info:
@@ -344,23 +296,6 @@ cabs:
         dtype: File
         required: false
 
-  query-albus:
-    command: query_albus.run_albus_predict
-    flavour: python
-    inputs:
-      ms:
-        dtype: MS
-        required: true
-      field:
-        dtype: int
-        default: 0
-      location:
-        default: MeerKAT
-    outputs:
-      output_dir:
-        dtype: Directory
-        required: true
-
 lib:
   recipes:
     make_masks:
@@ -426,7 +361,7 @@ lib:
           auto-threshold: =recipe.wsclean_auto_thresh
           baseline-averaging: 12
           no-update-model-required: true
-          auto-mask: =IF(current.fits-mask, UNSET, recipe.wsclean_auto_mask)
+          auto-mask: =IFSET(current.fits-mask, UNSET, recipe.wsclean_auto_mask)
           fit-beam: true
           elliptical-beam: true
           join-channels: true
