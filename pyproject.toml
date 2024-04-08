@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "lightcurve-pipeline"
+version = "0.0.0"
+description = "Basic pipeline for post-1GC lightcurve extraction."
+repository = "https://github.com/joesbright/parrot-stew-recipes"
+authors = [
+    "Oleg Smirnov <osmirnov@gmail.com >",
+    "Joe Bright <joe.bright@physics.ox.ac.uk>",
+    "Jonathan Kenyon <jonathan.simon.kenyon@gmail.com>",
+]
+license = "MIT"
+readme = "README.md"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Astronomy"
+]
+packages = [{include = "lightcurve_pipeline"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <3.11"
+stimela = { git = "https://github.com/caracal-pipeline/stimela.git", branch = "nested_subs" }
+cult-cargo = { git = "https://github.com/caracal-pipeline/cult-cargo.git" }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
