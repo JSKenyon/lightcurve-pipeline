@@ -38,7 +38,7 @@ import click
 from scabha.schema_utils import clickify_parameters
 from stimela.kitchen.cab import Cab
 from omegaconf import OmegaConf
-schemas = OmegaConf.load("parrot-cabs.yml")
+schemas = OmegaConf.load("lightcurve-cabs.yml")
 @click.group()
 def cli():
     pass

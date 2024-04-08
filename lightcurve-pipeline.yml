@@ -1,7 +1,7 @@
 #!/usr/bin/env -S stimela run
 
 _include:
-  - parrot-cabs.yml
+  - lightcurve-cabs.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:

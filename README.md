@@ -44,7 +44,7 @@ Requirements:
     is sufficient.
 
     ```
-    git clone https://github.com/ratt-ru/parrot-stew-recipes -b simple-parrot
+    git clone https://github.com/joesbright/parrot-stew-recipes -b simple-parrot
     ```
 
 ## Configuration
