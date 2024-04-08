@@ -19,33 +19,15 @@ not handle field selection.
 ## Installation
 
 The pipline is implemented as a Stimela recipe (https://stimela.readthedocs.io),
-and should be portable/reproducible given adequate hardware.
+and should be portable/reproducible given adequate hardware. Installation of
+required depndencies can be accomplished by running the following (preferably
+in a virtual environment):
 
-Requirements:
-
-*   stimela 2.0 (https://github.com/caracal-pipeline/stimela)
-
-*   cult-cargo (https://github.com/caracal-pipeline/cult-cargo)
-
-    These packages are still in a pre-release state at the time of writing.
-    Consequently, it is best to install the master branches to ensure all the
-    required features are avaialble.
-
-    To install the master branches, create a virtual environment, then do e.g.:
-
-    ```
-    pip install git+https://github.com/caracal-pipeline/stimela.git
-    pip install git+https://github.com/caracal-pipeline/cult-cargo.git
-    ```
-
-*   This recipe collections (https://github.com/joesbright/parrot-stew-recipes).
-
-    Note that this is not an installable Python package so simply cloning it
-    is sufficient.
-
-    ```
-    git clone https://github.com/joesbright/parrot-stew-recipes -b simple-parrot
-    ```
+```
+git clone https://github.com/joesbright/parrot-stew-recipes -b simple-parrot
+cd parrot-stew-recipes
+pip install -e .  # Ensure you have updated pip first.
+```
 
 ## Configuration
 
@@ -56,6 +38,9 @@ contents of `lightcurve-pipeline.yml`.
 
 ## Running
 
+In order to run the pipeline, ensure that you are in the `lightcurve_pipeline` 
+directory.
+
 The first step is to run the init steps of the pipeline. These steps are
 typically run once and never again. This can be accomplished using:
 
@@ -63,7 +48,7 @@ typically run once and never again. This can be accomplished using:
 stimela -C run lightcurve-pipline.yml -t init
 ```
 
-Thereafter the, remainder of the pipeline can be run using:
+Thereafter the remainder of the pipeline can be run using:
 ```
 stimela -C run lightcurve-pipline.yml
 ```
