@@ -187,6 +187,7 @@ cabs:
     command: |
       from omegaconf import OmegaConf
       import casacore.tables
+      import numpy as np
       tab = casacore.tables.table(ms)
       info = OmegaConf.create()
       info.timestamps = list(map(float, sorted(set(tab.getcol("TIME")))))
@@ -195,6 +196,11 @@ cabs:
       print(f"MS has {info.num_intervals} timeslots of interval {info.intervals}")
       info.total = [i*info.num_intervals/3600. for i in info.intervals]
       print(f"Total synthesis time is {info.total}h")
+      field_tab = casacore.tables.table(ms + "::FIELD")
+      phase_dir = field_tab.getcol("PHASE_DIR")[0, 0]
+      info.field_ra = float(np.rad2deg(phase_dir[0]))
+      info.field_dec = float(np.rad2deg(phase_dir[1]))
+      print(f"Field centre (ra, dec) in degrees is ({info.field_ra}, {info.field_dec}).")
       OmegaConf.save(info, ms_info_file)
     inputs:
       ms: 
@@ -209,12 +215,18 @@ cabs:
       from omegaconf import OmegaConf
       info = OmegaConf.load(ms_info_file)
       num_intervals = info.num_intervals
+      field_ra_deg = info.field_ra
+      field_dec_deg = info.field_dec
     inputs:
       ms-info-file: 
         dtype: File
     outputs:
       num_intervals:
         dtype: int
+      field_ra_deg:
+        dtype: float
+      field_dec_deg:
+        dtype: float
 
   make-plumber-beams:
     info:
