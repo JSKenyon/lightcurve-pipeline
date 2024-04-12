@@ -24,7 +24,7 @@ packages = [{include = "lightcurve_pipeline"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.11"
-stimela = { git = "https://github.com/caracal-pipeline/stimela.git", branch = "nested_subs" }
+stimela = { git = "https://github.com/caracal-pipeline/stimela.git" }
 cult-cargo = { git = "https://github.com/caracal-pipeline/cult-cargo.git" }
 
 [build-system]

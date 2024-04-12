@@ -2,6 +2,7 @@
 
 _include:
   - lightcurve-cabs.yml
+  - (pfb)stimela_cabs.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:
