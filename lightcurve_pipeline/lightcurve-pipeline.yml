@@ -25,9 +25,9 @@ lightcurve-pipeline:
     log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'  # put logs into output dir
     # some more directory assignments
     dirs:
-      ms: msdir  # MSs live here
+      ms: "{config.run.env.HOME}/ATA_experiments/original_data"  # MSs live here
       temp: "{config.run.env.HOME}/tmp"  # temp files go here
-      base: /home/kenyon/ATA_experiments/lightcurve_extraction/working_dir  # base project directory -- directory of recipe by default
+      base: "{config.run.env.HOME}/ATA_experiments/lightcurve_extraction/working_dir"  # base project directory -- directory of recipe by default
 
     # _chan1x: =recipe.chan1 - 1       # end channel, inclusive -- helper variable to form CASA spw
     casa-spw: 0 #"0:{recipe.chan0}~{recipe._chan1x}"  # CASA spw parameter

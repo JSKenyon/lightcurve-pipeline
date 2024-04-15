@@ -1,6 +1,6 @@
 obs:
   ATA_test:
-    ms: /home/kenyon/ATA_experiments/original_data/SN2023ixf_noauto_1GC.ms
+    ms: "{recipe.dirs.ms}/SN2023ixf_noauto_1GC.ms"
     dirs.sub: ATA_test
     wsclean_size: 2048
     wsclean_nchan: 8
