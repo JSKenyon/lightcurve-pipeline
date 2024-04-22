@@ -18,7 +18,7 @@ cabs:
   wget:
     command: wget
     inputs:
-      url: 
+      url:
         dtype: str
         policies:
           positional: true
@@ -26,7 +26,7 @@ cabs:
         dtype: bool
         default: true
     outputs:
-      dest: 
+      dest:
         dtype: File
         required: false
         nom_de_guerre: 'output-document'
@@ -47,7 +47,7 @@ cabs:
     outputs:
       cube:
         dtype: File
-      
+
 
   convolve_image:
     flavour: python
@@ -96,7 +96,7 @@ cabs:
       interesting_timestamps:
         dtype: File
       select_labels:
-        dtype: List[str]      
+        dtype: List[str]
       fluxcols:
         info: list of column names to look for fluxes
         dtype: List[str]
@@ -203,7 +203,7 @@ cabs:
       print(f"Field centre (ra, dec) in degrees is ({info.field_ra}, {info.field_dec}).")
       OmegaConf.save(info, ms_info_file)
     inputs:
-      ms: 
+      ms:
         dtype: MS
     outputs:
       ms-info-file:
@@ -218,7 +218,7 @@ cabs:
       field_ra_deg = info.field_ra
       field_dec_deg = info.field_dec
     inputs:
-      ms-info-file: 
+      ms-info-file:
         dtype: File
     outputs:
       num_intervals:
@@ -230,10 +230,10 @@ cabs:
 
   make-plumber-beams:
     info:
-      Plumber generates full Stokes primary beam models for radio interferometers using Zernike model 
-      coefficients of the antenna aperture illumination pattern. The generated PB models are scaled and 
-      matched to the input image coordinate system in order to use standard PB correction tools 
-      (such as those found in CASA).    
+      Plumber generates full Stokes primary beam models for radio interferometers using Zernike model
+      coefficients of the antenna aperture illumination pattern. The generated PB models are scaled and
+      matched to the input image coordinate system in order to use standard PB correction tools
+      (such as those found in CASA).
       See https://github.com/ARDG-NRAO/plumber
     command: plumber
     inputs:
@@ -254,19 +254,19 @@ cabs:
         info: 'Padding factor for aperture, affects smoothness of output beam  [default: 8]'
       dish_dia:
         dtype: float
-        info: 
+        info:
           Diameter of the antenna dish. If not one of VLA,
           ALMA, MeerKAT or GMRT, must be specified.
       islinear:
         dtype: bool
-        info: 
+        info:
           Specifies if the telescope has linear feeds. If not
           one of VLA, ALMA, MeerKAT or GMRT, must be specified
       stokesI:
         dtype: bool
-        info: 
+        info:
           Only generate the Stokes I beam, not the full Stokes beams
-      parallel: 
+      parallel:
         dtype: bool
       parang:
         dtype: Union[float, Tuple[float, float]]
@@ -282,7 +282,7 @@ cabs:
       mdv_beams:
         dtype: File
     outputs:
-      power_beam: 
+      power_beam:
         dtype: File
 
   derive-power-beam:
@@ -308,6 +308,12 @@ cabs:
         dtype: File
         required: false
 
+  quartical:
+    outputs:
+      corrected_data_column:
+        dtype: str
+        required: false
+
 lib:
   recipes:
     make_masks:
@@ -319,7 +325,7 @@ lib:
           dtype: str
         skip-regions:
           dtype: File
-      
+
       aliases:
         # inputs
         restored-image: mask.restored-image
@@ -338,7 +344,7 @@ lib:
           params:
             mask: '{recipe.prefix}-mask.fits'
 
-  steps: 
+  steps:
     wsclean:
       base:
         info: "base wsclean settings"
@@ -377,7 +383,7 @@ lib:
           fit-beam: true
           elliptical-beam: true
           join-channels: true
-      
+
       image_pol:
         _use: lib.steps.wsclean.image
         info: "wsclean step for IQUV imaging"
@@ -386,7 +392,7 @@ lib:
           fit-spectral-pol: =UNSET
           pol: IQUV
           mgain: 0.9
-      
+
       image_column:
         _use:
           - lib.steps.wsclean.image
@@ -395,13 +401,13 @@ lib:
           join-channels: true
           save-source-list: true
           column: SELFCAL{info.suffix}_DATA
-      
+
       image_column_pol:
         _use:
           - lib.steps.wsclean.image_pol
         params:
           column: SELFCAL{info.suffix}_DATA
-      
+
       predict:
         _use: lib.steps.wsclean.base
         info: "wsclean step for predicting a model"
@@ -420,6 +426,7 @@ lib:
       k:
         _use: lib.steps.quartical.base
         params:
+          corrected_data_column: SELFCAL{info.suffix}_DATA
           input_ms:
             path: =recipe.ms
           input_model:
@@ -431,9 +438,9 @@ lib:
             gain_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
             log_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
             products: [corrected_data]
-            columns: =LIST("SELFCAL{info.suffix}_DATA")
+            columns: [=current.corrected_data_column]
           mad_flags:
-            enable: =root.mad_flag 
+            enable: =root.mad_flag
             threshold_bl: 8
           K:
             time_interval: 0

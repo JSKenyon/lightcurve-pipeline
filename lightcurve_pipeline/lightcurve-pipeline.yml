@@ -189,7 +189,8 @@ lightcurve-pipeline:
         fits mask.
       _use: lib.steps.wsclean.image_column
       params:
-        fits-mask: =steps.mask-1.mask
+        column: =steps.selfcal-*.corrected_data_column
+        fits-mask: =steps.mask-*.mask
         auto-threshold: 1
 
     source-catalog:
