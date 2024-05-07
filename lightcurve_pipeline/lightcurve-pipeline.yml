@@ -24,10 +24,8 @@ lightcurve-pipeline:
     image-prefix: '{recipe.dir-out}/im{info.suffix}{recipe.variant}/im{info.suffix}{recipe.variant}'  # prefix for image names at each step
     log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'  # put logs into output dir
     # some more directory assignments
-    dirs:
-      ms: "{config.run.env.HOME}/ATA_experiments/original_data"  # MSs live here
-      temp: "{recipe.dirs.base}/tmp"  # temp files go here
-      base: "{config.run.env.HOME}/ATA_experiments/lightcurve_extraction/working_dir"  # base project directory -- directory of recipe by default
+    dirs.temp: "{recipe.dirs.base}/tmp"  # temp files go here
+    ms-path: "{recipe.dirs.ms}/{recipe.ms-name}"
 
     # _chan1x: =recipe.chan1 - 1       # end channel, inclusive -- helper variable to form CASA spw
     casa-spw: 0 #"0:{recipe.chan0}~{recipe._chan1x}"  # CASA spw parameter
@@ -40,9 +38,9 @@ lightcurve-pipeline:
 
   inputs:
     obs:
-      choices: [ATA_test]
+      choices: [meerkat_uhf_test, ata_test]
       info: "Selects observation, see datasets.yml for list of observations."
-      default: ATA_test
+      default: ata_test
     output-suffix:
       dtype: str
       default: ''
@@ -99,7 +97,7 @@ lightcurve-pipeline:
       tags: [init, never]
       cab: casa.flagman
       params:
-        ms: =recipe.ms
+        ms: =recipe.ms-path
         mode: save
         versionname: =recipe.initial-flag-version
 
@@ -111,8 +109,8 @@ lightcurve-pipeline:
       cab: save-ms-info
       skip_if_outputs: exist
       params:
-        ms: =recipe.ms
-        ms-info-file: '{recipe.dir-out}/{recipe.ms}.yml'
+        ms: =recipe.ms-path
+        ms-info-file: '{recipe.dir-out}/{recipe.ms-name}.yml'
 
     ms-info:
       info: |
@@ -130,7 +128,7 @@ lightcurve-pipeline:
         been run once for this step to work.
       cab: casa.flagman
       params:
-        ms: =recipe.ms
+        ms: =recipe.ms-path
         mode: restore
         versionname: =recipe.initial-flag-version
 
@@ -149,13 +147,14 @@ lightcurve-pipeline:
       params:
         restored-image: "{previous.restored.mfs}"
         prefix: "{previous.prefix}"
+        mask: "{current.prefix}-mask.fits"
 
     flagsummary-1:
       info: |
         Use casa to generate a summary of the flags on the dataset.
       cab: casa.flagsummary
       params:
-        ms: =recipe.ms
+        ms: =recipe.ms-path
         spw: =recipe.casa-spw
 
     predict-1:
@@ -164,7 +163,7 @@ lightcurve-pipeline:
         MODEL_DATA column.
       _use: lib.steps.wsclean.predict
       params:
-        ms: '{recipe.ms}'
+        ms: =recipe.ms-path
         prefix: '{steps.image-1.prefix}'
         nchan: '{steps.image-1.nchan}'
 
@@ -180,7 +179,7 @@ lightcurve-pipeline:
         Use casa to generate a summary of the flags on the dataset.
       cab: casa.flagsummary
       params:
-        ms: =recipe.ms
+        ms: =recipe.ms-path
         spw: =recipe.casa-spw
 
     image-2:
@@ -227,7 +226,7 @@ lightcurve-pipeline:
         MODEL_DATA column.
       _use: lib.steps.wsclean.predict
       params:
-        ms: '{recipe.ms}'
+        ms: =recipe.ms-path
         prefix: =steps.image-2.prefix
         nchan: =steps.image-2.nchan
 
@@ -236,7 +235,7 @@ lightcurve-pipeline:
         Use casa to add the CORRECTED_DATA column if it does not exist.
       cab: msutils.addcol
       params:
-        msname: =recipe.ms
+        msname: =recipe.ms-path
         colname: CORRECTED_DATA
 
     subtract-model:
@@ -245,7 +244,7 @@ lightcurve-pipeline:
         corrected residuals.
       cab: taql.update
       params:
-        ms: "{recipe.ms}"
+        ms: =recipe.ms-path
         commands: =LIST("set", "CORRECTED_DATA={steps.image-2.column}-MODEL_DATA")
 
     htc-image-1:
@@ -265,6 +264,7 @@ lightcurve-pipeline:
         size: '{recipe.htc_size}'
         scale: '{recipe.htc_scale}'
         reorder: true
+        no-dirty: true
       tags: [lightcurves]
       skip_if_outputs: fresh
 
@@ -273,9 +273,9 @@ lightcurve-pipeline:
         Stack a series of images into a single cube.
       cab: stack_time_cube
       params:
-        images: =steps.htc-image*.dirty.per-interval
+        images: =steps.htc-image*.restored.per-interval
         cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-dirty.fits'
-        ms: =recipe.ms
+        ms: =recipe.ms-path
         cadence: =recipe.htc_cadence
       skip_if_outputs: fresh
       tags: [lightcurves]
