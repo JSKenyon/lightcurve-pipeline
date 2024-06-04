@@ -17,7 +17,8 @@ obs:
     htc_weight: "briggs 0"
     lightcurves-within: 1deg
     initial-flag-version: "original_flags"
-    catalog-flux-columns: [flux_bdsf]
+    ncpu: 16  # For some breifast steps.
+    nlc: 100  # Extract top N lightcurves.
   ata_test:
     dirs.ms: "{config.run.env.HOME}/ATA_experiments/msdir"
     dirs.base: "{config.run.env.HOME}/ATA_experiments/outputs"
@@ -36,4 +37,5 @@ obs:
     htc_weight: "briggs 0"
     lightcurves-within: 1deg
     initial-flag-version: "original_flags"
-    catalog-flux-columns: [flux_bdsf]
+    ncpu: 16  # For some breifast steps.
+    nlc: 100  # Extract top N lightcurves.

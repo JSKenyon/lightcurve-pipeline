@@ -217,12 +217,15 @@ cabs:
       num_intervals = info.num_intervals
       field_ra_deg = info.field_ra
       field_dec_deg = info.field_dec
+      delta_time = info.timestamps[1] - info.timestamps[0]
     inputs:
       ms-info-file:
         dtype: File
     outputs:
       num_intervals:
         dtype: int
+      delta-time:
+        dtype: float
       field_ra_deg:
         dtype: float
       field_dec_deg:

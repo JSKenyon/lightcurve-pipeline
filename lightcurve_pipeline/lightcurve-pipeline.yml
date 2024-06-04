@@ -2,6 +2,10 @@
 
 _include:
   - lightcurve-cabs.yml
+  - (breifast.cabs)breifast.yml
+  - (breifast.cabs)tron-cabs.yml
+  - (breifast)tron-breifast.yml
+  - (breifast)tron-lightcurves.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:
@@ -192,34 +196,6 @@ lightcurve-pipeline:
         fits-mask: =steps.mask-*.mask
         auto-threshold: 1
 
-    source-catalog:
-      info: |
-        Extract a source catalogue from a restored image using pybdsf.
-      cab: bdsf.catalog
-      params:
-        image: =steps.image-2.restored.mfs
-        thresh_pix: 4
-        thresh_isl: 3
-        rms_box: [20,5]
-        rms_map: false
-        catalog_format: ascii
-        outfile_gaul: =STRIPEXT(current.image) + '.gaul'
-        outfile_srl: =STRIPEXT(current.image) + '.srl'
-
-    make-master-catalog:
-      info: |
-        Create a single master catalog in .ecsv format. This can be used to
-        merge image-based pybdsf catalogues with other catalogues of known or
-        interesting sources.
-      cab: make-master-catalog
-      params:
-        master_catalog: =recipe.dir-out + '/mastercat.ecsv'
-        ra0: '{steps.ms-info.field_ra_deg}deg'
-        dec0: '{steps.ms-info.field_dec_deg}deg'
-        max_radius_deg: 1.5
-        catalogs:
-          bdsf: [=previous.outfile_srl, 6, main]
-
     predict-2:
       info: |
         Use wsclean to write the visibilities associated with the model to the
@@ -270,74 +246,85 @@ lightcurve-pipeline:
 
     htc-stack-1:
       info: |
-        Stack a series of images into a single cube.
-      cab: stack_time_cube
+        Stack high time resolution images into a zarr cube.
+      cab: breifast.stack-time-cube
+      backend:
+        select: native
       params:
         images: =steps.htc-image*.restored.per-interval
-        cube: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}-dirty.fits'
-        ms: =recipe.ms-path
-        cadence: =recipe.htc_cadence
+        cds: =DIRNAME(recipe.image-prefix) + '-cad{recipe.htc_cadence}/cube-{recipe.htc_cadence}.zarr'
+        delta-time: =steps.ms-info.delta-time
+        obs-label: =recipe.obs
+        ra-chunking: 512
+        dec-chunking: 512
+        time-chunking: 100
       skip_if_outputs: fresh
       tags: [lightcurves]
 
-    extract-metadata:
+    cube-mean-to-fits:
       info: |
-        Run some custom python code to extract fits metadata from images.
-      cab: extract_fits_metadata
+        Converts time-mean component of zarr cube into FITS image.
+      cab: breifast.zarr-to-fits
+      backend:
+        select: native
       params:
-        images: =previous.images
-        timestamps_file: =STRIPEXT(previous.cube) + '.timestamps.p'
-        beams_file: =STRIPEXT(previous.cube) + '.beams.p'
+        cds: =steps.htc-stack-*.cds
+        out-image: =STRIPEXT(current.cds) + '.mean.fits'
+        var: mean
       skip_if_outputs: fresh
+      tags: [lightcurves, cubes_to_fits, cubes]
+
+    cube-to-fits:
+      info: |
+        Converts zarr cube into FITS cube.
+      cab: breifast.zarr-to-fits
+      backend:
+        select: native
+      params:
+        cds: =steps.htc-stack-*.cds
+        out-image: =STRIPEXT(current.cds) + '.fits'
+        var: cube
+      skip_if_outputs: fresh
+      tags: [lightcurves, cubes_to_fits, cubes]
+
+    breifast:
+      info: runs a multi-timescale breifast search on cubes
+      recipe: tron-breifast
+      backend:
+        select: native
+      params:
+        deep-image: =steps.image-2.restored.mfs
+        cds: =steps.htc-stack-*.cds
+        timescales: [0,30,60,120,240,480]
+      tags: [breifast]
+
+    collect-cds-list:
+      cab:
+        flavour:
+          kind: python-code
+        inputs:
+          cds:
+            default: =steps.breifast.cds
+          timescales:
+            dtype: List[float]
+            default: =steps.breifast.timescales
+        outputs:
+          cds-list:
+            dtype: List[Directory]
+        command: |
+          import os.path
+          cds_list = [cds if t == 0 else os.path.splitext(cds)[0] + f"-{int(t)}s.zarr" for t in timescales]
       tags: [lightcurves]
 
-    cube-convolve:
-      info: |
-        Colvolve the image cube with a three dimensitional Gaussian filter.
-        The extent of this filter in the spatial axes should be consistent
-        with the restoring beam, and the time extent of the time axis should
-        be matched to the temporal extent of features of interest.
-      cab: convolve_image
+    lightcurves:
+      info: runs lightcurve analysis on cubes
+      recipe: tron-lightcurves
+      backend:
+        select: native
       params:
-        image: =steps.htc-stack-1.cube
-        size_arcsec: =recipe.convolve.arcsec
-        size_sec: =recipe.convolve.time
-        outimage: =STRIPEXT(current.image) + '{recipe.lc-suffix}.fits'
-      skip: =not recipe.lc-suffix
-      skip_if_outputs: fresh
-      tags: [lightcurves]
-
-    extract-lightcurves:
-      info: |
-        Extract lightcurves from an image cube at the locations given by a
-        catalog.
-      skip: =not recipe.lc-suffix # skip if lc-suffix is not set: we don't make a convolved cube then
-      cab: extract_lightcurves
-      params:
-        cube: =IF(recipe.lc-suffix, steps.cube-convolve.outimage, steps.htc-stack-1.cube)
-        outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}{recipe.lc-suffix}'
-        catalog: =steps.make-master-catalog.master_catalog
-        regfile: '{current.outdir}/lc{recipe.htc_cadence}-{recipe.obs}.reg'
-        statsfile: '{current.outdir}/lc{recipe.htc_cadence}-{recipe.obs}.stats.p'
-        output_file_label: "-{recipe.obs}"
-        srctype: P
-        minflux: 3uJy
-        flag_excess_std: 3
-        within: =recipe.lightcurves-within
-        nsrc: 50000
-        ncpu: 1  #=root.ncpu
-        fluxcols: =recipe.catalog-flux-columns
-        plot_title: =IF(recipe.publish-plots, NOSUBST(recipe.publish-plot-title), UNSET)
-      skip_if_outputs: fresh
-      tags: [lightcurves]
-
-    extract-lightcurves-1:
-      info: |
-        Extracts lightcurves from the raw (unconvolved) cube.
-      _use: lightcurve-pipeline.steps.extract-lightcurves
-      skip: false
-      params:
-        cube: =steps.htc-stack-1.cube
-        outdir: '{recipe.dir-out}/lc{recipe.htc_cadence}'
-      skip_if_outputs: fresh
+        dir-out: =recipe.dir-out
+        image: =steps.breifast.deep-image
+        cds-list: =steps.collect-cds-list.cds-list
+        ncpu: =recipe.ncpu
+        nlc: =recipe.nlc
       tags: [lightcurves]
