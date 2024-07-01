@@ -24,7 +24,7 @@ required depndencies can be accomplished by running the following (preferably
 in a virtual environment):
 
 ```
-git clone https://github.com/joesbright/parrot-stew-recipes -b simple-parrot
+git clone https://github.com/joesbright/parrot-stew-recipes -b breifast-pipeline
 cd parrot-stew-recipes
 pip install -e .  # Ensure you have updated pip first.
 ```

@@ -218,12 +218,15 @@ cabs:
       num_intervals = info.num_intervals
       field_ra_deg = info.field_ra
       field_dec_deg = info.field_dec
+      delta_time = info.timestamps[1] - info.timestamps[0]
     inputs:
       ms-info-file:
         dtype: File
     outputs:
       num_intervals:
         dtype: int
+      delta-time:
+        dtype: float
       field_ra_deg:
         dtype: float
       field_dec_deg:
@@ -309,6 +312,12 @@ cabs:
         dtype: File
         required: false
 
+  quartical:
+    outputs:
+      corrected_data_column:
+        dtype: str
+        required: false
+
 lib:
   recipes:
     make_masks:
@@ -321,13 +330,17 @@ lib:
         skip-regions:
           dtype: File
 
+      outputs:  # Workaround for issue below.
+        mask:
+          dtype: File
+
       aliases:
         # inputs
         restored-image: mask.restored-image
         threshold: mask.threshold
         dilate: mask.dilate
         # outputs
-        mask: mask.mask
+        # mask: mask.mask  # https://github.com/caracal-pipeline/stimela/issues/287
 
       defaults:
         threshold: 6.5
@@ -337,7 +350,7 @@ lib:
         mask:
           cab: breizorro
           params:
-            mask: '{recipe.prefix}-mask.fits'
+            mask: "{recipe.mask}"
 
   steps:
     wsclean:
@@ -349,13 +362,14 @@ lib:
           nwlayers-factor: 3
           use-wgridder: true
           log-time: true
-          ms: '{recipe.ms}'
+          ms: '{recipe.ms-path}'
           prefix: '{recipe.image-prefix}'
           size: '{recipe.wsclean_size}'
           scale: '{recipe.pixel_scale}asec'
           nchan: '{recipe.wsclean_nchan}'
-          temp-dir: '{config.run.env.HOME}/tmp'
+          temp-dir: '{recipe.dirs.temp}'
           column: SELFCAL{info.suffix}_DATA
+          threads: '{recipe.wsclean_threads}'
 
       dirty:
         _use: lib.steps.wsclean.base
@@ -421,8 +435,9 @@ lib:
       k:
         _use: lib.steps.quartical.base
         params:
+          corrected_data_column: SELFCAL{info.suffix}_DATA
           input_ms:
-            path: =recipe.ms
+            path: =recipe.ms-path
           input_model:
             recipe: MODEL_DATA
           solver:
@@ -432,7 +447,7 @@ lib:
             gain_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
             log_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
             products: [corrected_data]
-            columns: =LIST("SELFCAL{info.suffix}_DATA")
+            columns: [=current.corrected_data_column]
           mad_flags:
             enable: =root.mad_flag
             threshold_bl: 8
