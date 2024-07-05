@@ -42,7 +42,7 @@ lightcurve-pipeline:
 
   inputs:
     obs:
-      choices: [meerkat_uhf_test, ata_test]
+      choices: [meerkat_uhf_test, meerkat_l_test, ata_test]
       info: "Selects observation, see datasets.yml for list of observations."
       default: ata_test
     output-suffix:
@@ -293,6 +293,7 @@ lightcurve-pipeline:
       backend:
         select: native
       params:
+        dir-out: "."
         deep-image: =steps.image-2.restored.mfs
         cds: =steps.htc-stack-*.cds
         timescales: [0,30,60,120,240,480]
