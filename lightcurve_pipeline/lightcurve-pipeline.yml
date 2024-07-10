@@ -226,15 +226,14 @@ lightcurve-pipeline:
 
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
-      recipe: tron_base
+      recipe: tron_wrapper
       backend:
         select: native
-      assign:
-        # some more default directory assignments
-        dirs.temp: =recipe.dirs.temp
-
       params:
+        obs: =recipe.obs
         ms: =recipe.ms-path
+        dirs.temp: =recipe.dirs.temp
+        dirs.cubes: '{recipe.dir-out}/cubes'
         column.residual: CORRECTED_DATA
         deep-image: =steps.image-2.restored.mfs
         htc:
@@ -247,129 +246,23 @@ lightcurve-pipeline:
         dir-out: =recipe.dir-out
         nlc: =recipe.nlc
         ncpu: =recipe.ncpu
+        stokes: [I]
         enable-hdf5: false
         enable-fits: true
       tags: [breifast]
 
-    # image-htc:
-    #   info: |
-    #     Use wsclean to create a series of images corresponding to time
-    #     intervals. Ideally, this will be an image per unique time, but this
-    #     resolution can be controlled using the htc_cadence parameter to
-    #     decrease computational expense at the cost of time resolution.
-    #   cab: wsclean
-    #   params:
-    #     ms: =recipe.ms-path
-    #     column: CORRECTED_DATA #=IFSET(recipe.column.residual, recipe.column.residual, recipe.column.data)
-    #     # subtract-model: =not IFSET(recipe.column.residual)
-    #     prefix: '{recipe.dir-out}/images/cad{recipe.htc_cadence}'
-    #     intervals-out: =steps.ms-info.num_intervals / recipe.htc_cadence
-    #     multi.interval: true  # enforces per-interval mode for stimela
-    #     weight: =recipe.htc_weight
-    #     size: =recipe.htc_size
-    #     scale: =recipe.htc_scale
-    #     # pol: =recipe.stokes
-    #     use-wgridder: true
-    #     no-dirty: true
-    #     log-time: true
-    #     nchan: 1
-    #     niter: 0
-    #     padding: 2
-    #     # nwlayers-factor: 3
-    #     temp-dir: =recipe.dirs.temp
-    #   tags: [lightcurves, cubes]
-    #   skip: =IFSET(recipe.image-slices)
-    #   skip_if_outputs: exist
 
-    # stack-cds:
-    #   info: stacks images into zarr cube dataset (CDS)
-    #   cab: breifast.stack-time-cube
-    #   backend:
-    #     select: native
-    #   params:
-    #     images: =IFSET(recipe.image-slices, SELF,
-    #         IFSET(steps.image-htc.restored.i.per-interval,SELF,steps.image-htc.restored.per-interval))
-    #     # images-q: =IFSET(steps.image-htc.restored.q.per-interval)
-    #     # images-u: =IFSET(steps.image-htc.restored.u.per-interval)
-    #     # images-v: =IFSET(steps.image-htc.restored.v.per-interval)
-    #     cds: '{recipe.dir-out}/cubes/cube-{recipe.htc_cadence}.zarr'
-    #     delta-time: =steps.ms-info.delta-time # * recipe.htc.cadence
-    #     obs-label: =recipe.obs
-    #     ra-chunking: 512
-    #     dec-chunking: 512
-    #     time-chunking: 100
-    #     # https://github.com/ratt-ru/breifast/issues/3#issuecomment-2093730409 suggests Y=32 chunking
-    #     # is the optimal(ish) trade-off between peak RAM usage (~150G) and performance for 3072x3072 images,
-    #     # time-chunking: 1
-    #     # byte-chunking: =32*3072*4
-    #   skip_if_outputs: fresh
-    #   tags: [lightcurves, cubes]
-
-    # cube-mean-to-fits:
-    #   info: |
-    #     Converts time-mean component of zarr cube into FITS image.
-    #   cab: breifast.zarr-to-fits
-    #   backend:
-    #     select: native
-    #   params:
-    #     cds: =steps.stack-cds.cds
-    #     out-image: =STRIPEXT(current.cds) + '.mean.fits'
-    #     var: mean
-    #   skip_if_outputs: fresh
-    #   tags: [lightcurves, cubes_to_fits, cubes]
-
-    # cube-to-fits:
-    #   info: |
-    #     Converts zarr cube into FITS cube.
-    #   cab: breifast.zarr-to-fits
-    #   backend:
-    #     select: native
-    #   params:
-    #     cds: =steps.stack-cds.cds
-    #     out-image: =STRIPEXT(current.cds) + '.fits'
-    #     var: cube
-    #   skip_if_outputs: fresh
-    #   tags: [lightcurves, cubes_to_fits, cubes]
-
-    # breifast:
-    #   info: runs a multi-timescale breifast search on cubes
-    #   recipe: tron-breifast
-    #   backend:
-    #     select: native
-    #   params:
-    #     dir-out: =recipe.dir-out
-    #     deep-image: =steps.image-2.restored.mfs
-    #     cds: =steps.stack-cds.cds
-    #     timescales: [0,30,60,120,240,480]
-    #   tags: [breifast]
-
-    # collect-cds-list:
-    #   cab:
-    #     flavour:
-    #       kind: python-code
-    #     inputs:
-    #       cds:
-    #         default: =steps.breifast.cds
-    #       timescales:
-    #         dtype: List[float]
-    #         default: =steps.breifast.timescales
-    #     outputs:
-    #       cds-list:
-    #         dtype: List[Directory]
-    #     command: |
-    #       import os.path
-    #       cds_list = [cds if t == 0 else os.path.splitext(cds)[0] + f"-{int(t)}s.zarr" for t in timescales]
-    #   tags: [lightcurves]
-
-    # lightcurves:
-    #   info: runs lightcurve analysis on cubes
-    #   recipe: tron-lightcurves
-    #   backend:
-    #     select: native
-    #   params:
-    #     dir-out: =recipe.dir-out
-    #     image: =steps.breifast.deep-image
-    #     cds-list: =steps.collect-cds-list.cds-list
-    #     ncpu: =recipe.ncpu
-    #     nlc: =recipe.nlc
-    #   tags: [lightcurves]
+tron_wrapper:
+  _use: tron_base
+  inputs:
+    ms:
+      info: measurement set
+      dtype: MS
+      required: true
+    dirs:
+      temp:
+        dtype: Directory
+        required: true
+      cubes:
+        dtype: Directory
+        required: true
