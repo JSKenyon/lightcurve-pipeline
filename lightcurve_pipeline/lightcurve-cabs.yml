@@ -1,10 +1,11 @@
 _include:
-  (cultcargo):
-    - pfb-clean.yml
+  - (pfb)stimela_cabs.yml
+  - (quartical)stimela_cabs.yaml
+  - (cultcargo):
     - wsclean.yml
     - casa-flag.yml
     - breizorro.yml
-    - quartical.yml
+    # - quartical.yml
     - cubical.yml
     - crystalball.yml
     - smops.yml
