@@ -224,45 +224,45 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         commands: =LIST("set", "CORRECTED_DATA={steps.image-2.column}-MODEL_DATA")
 
-    transient-imaging:
-      info: Run the tron pipeline for image plane transient detection.
-      recipe: tron_wrapper
-      backend:
-        select: native
-      params:
-        obs: =recipe.obs
-        ms: =recipe.ms-path
-        dirs.temp: =recipe.dirs.temp
-        dirs.cubes: '{recipe.dir-out}/cubes'
-        column.residual: CORRECTED_DATA
-        deep-image: =steps.image-2.restored.mfs
-        htc:
-          cadence: =recipe.htc_cadence
-          size: =recipe.htc_size
-          scale: =recipe.htc_scale
-          weight: =recipe.htc_weight
-          convolve:
-            arcsec: 8
-        dir-out: =recipe.dir-out
-        nlc: =recipe.nlc
-        ncpu: =recipe.ncpu
-        stokes: [I]
-        enable-hdf5: false
-        enable-fits: true
-      tags: [breifast]
+    # transient-imaging:
+    #   info: Run the tron pipeline for image plane transient detection.
+    #   recipe: tron_wrapper
+    #   backend:
+    #     select: native
+    #   params:
+    #     obs: =recipe.obs
+    #     ms: =recipe.ms-path
+    #     dirs.temp: =recipe.dirs.temp
+    #     dirs.cubes: '{recipe.dir-out}/cubes'
+    #     column.residual: CORRECTED_DATA
+    #     deep-image: =steps.image-2.restored.mfs
+    #     htc:
+    #       cadence: =recipe.htc_cadence
+    #       size: =recipe.htc_size
+    #       scale: =recipe.htc_scale
+    #       weight: =recipe.htc_weight
+    #       convolve:
+    #         arcsec: 8
+    #     dir-out: =recipe.dir-out
+    #     nlc: =recipe.nlc
+    #     ncpu: =recipe.ncpu
+    #     stokes: [I]
+    #     enable-hdf5: false
+    #     enable-fits: true
+    #   tags: [breifast]
 
 
-tron_wrapper:
-  _use: tron_base
-  inputs:
-    ms:
-      info: measurement set
-      dtype: MS
-      required: true
-    dirs:
-      temp:
-        dtype: Directory
-        required: true
-      cubes:
-        dtype: Directory
-        required: true
+# tron_wrapper:
+#   _use: tron_base
+#   inputs:
+#     ms:
+#       info: measurement set
+#       dtype: MS
+#       required: true
+#     dirs:
+#       temp:
+#         dtype: Directory
+#         required: true
+#       cubes:
+#         dtype: Directory
+#         required: true
