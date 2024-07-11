@@ -40,8 +40,8 @@ obs:
     ncpu: 16  # For some breifast steps.
     nlc: 100  # Extract top N lightcurves.
   meerkat_l_test:
-    dirs.ms: "{config.run.env.HOME}/ConjBoom/msdir"
-    dirs.base: "{config.run.env.HOME}/ConjBoom/outputs"
+    dirs.ms: "{config.run.env.HOME}/projects/ConjBoom/msdir"
+    dirs.base: "{config.run.env.HOME}/projects/ConjBoom/outputs"
     dirs.sub: meerkat_l_test
     ms-name: "1624216341_sdp_l0-J2009_2026-corr.ms"
     wsclean_threads: 16
