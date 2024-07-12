@@ -259,10 +259,14 @@ tron_wrapper:
       info: measurement set
       dtype: MS
       required: true
+  outputs:
     dirs:
       temp:
         dtype: Directory
         required: true
+        skip_freshness_checks: true
+        mkdir: true
       cubes:
         dtype: Directory
         required: true
+        mkdir: true
