@@ -4,9 +4,9 @@ _include:
   - lightcurve-cabs.yml
   - (breifast.cabs)breifast.yml
   - (breifast.cabs)tron-cabs.yml
-  - (breifast)tron.yml
-  - (breifast)tron-breifast.yml
-  - (breifast)tron-lightcurves.yml
+  - (breifast.recipes)tron.yml
+  - (breifast.recipes)tron-breifast.yml
+  - (breifast.recipes)tron-lightcurves.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:

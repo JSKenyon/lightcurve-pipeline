@@ -11,8 +11,8 @@ obs:
     wsclean_auto_thresh: 2
     weight: "briggs 0"
     pixel_scale: 2.4
-    htc_size: 8192
-    htc_scale: 2.4arcsec
+    htc_size: 2048
+    htc_scale: 9.6arcsec
     htc_cadence: 1
     htc_weight: "briggs 0"
     lightcurves-within: 1deg
