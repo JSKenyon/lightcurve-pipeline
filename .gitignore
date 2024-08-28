@@ -1,0 +1,7 @@
+*.log
+log-*
+__pycache__
+.ipynb_checkpoints
+*.last
+stimela.config.deps
+logs

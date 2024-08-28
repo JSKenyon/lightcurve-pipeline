@@ -1,0 +1,456 @@
+_include:
+  (cultcargo):
+    - wsclean.yml
+    - casa-flag.yml
+    - breizorro.yml
+    - quartical.yml
+    - cubical.yml
+    - crystalball.yml
+    - smops.yml
+    - taql.yml
+    - msutils.yml
+    - fitstool.yml
+    - bdsf.yml
+    - tigger.yml
+
+
+cabs:
+  wget:
+    command: wget
+    inputs:
+      url:
+        dtype: str
+        policies:
+          positional: true
+      no-verbose:
+        dtype: bool
+        default: true
+    outputs:
+      dest:
+        dtype: File
+        required: false
+        nom_de_guerre: 'output-document'
+
+  stack_time_cube:
+    flavour: python
+    command: image_utils.stack_time_cube
+    inputs:
+      images:
+        dtype: List[File]
+        required: true
+      cadence:
+        dtype: int
+        default: 1
+      ms:
+        dtype: MS
+        required: true
+    outputs:
+      cube:
+        dtype: File
+
+
+  convolve_image:
+    flavour: python
+    command: image_utils.convolve_image
+    inputs:
+      image:
+        dtype: File
+        required: true
+      size_arcsec:
+        dtype: float
+      size_pix:
+        dtype: float
+      size_sec:
+        dtype: float
+      use_fft:
+        dtype: bool
+        info: use FFT for convolution (only if size_sec=0)
+    outputs:
+      outimage:
+        dtype: File
+
+  extract_fits_metadata:
+    flavour: python
+    command: image_utils.extract_fits_metadata
+    inputs:
+      images:
+        dtype: List[File]
+        required: true
+    outputs:
+      timestamps_file:
+        dtype: File
+      beams_file:
+        dtype: File
+
+  extract_lightcurves:
+    flavour: python
+    command: image_utils.extract_light_curves
+    inputs:
+      cube:
+        dtype: File
+      catalog:
+        dtype: File
+      nsrc:
+        dtype: int
+        default: 100
+      interesting_timestamps:
+        dtype: File
+      select_labels:
+        dtype: List[str]
+      fluxcols:
+        info: list of column names to look for fluxes
+        dtype: List[str]
+      srctype:
+        dtype: str
+      within:
+        dtype: str
+      minflux:
+        dtype: str
+      maxsize:
+        dtype: str
+      subtract:
+        dtype: str
+      flag_excess_std:
+        dtype: float
+      beaminfo:
+        dtype: File
+      ncpu:
+        dtype: int
+        default: 4
+      output_file_label:
+        dtype: str
+      plot_title:
+        dtype: str
+    outputs:
+      regfile:
+        dtype: File
+      statsfile:
+        dtype: File
+      outdir:
+        dtype: Directory
+        mkdir: true
+        must_exist: false
+        write_parent_dir: true
+
+  extract-model-spectrum:
+    flavour: python
+    command: image_utils.extract_model_spectrum
+    inputs:
+      lightcurves: List[File]       "set of lightcurves to work on"
+      modelsets: List[List[File]]   "lists of models that have been subtracted"
+      ncpu: int =1                  "number of CPU to use"
+
+  make-master-catalog:
+    flavour: python
+    command: catalog_utils.match_catalogs
+    inputs:
+      catalogs:
+        # maps label: -> filename, xmatch_arcsrc, type
+        #   where type is 'add', 'spi'
+        dtype: Dict[str, Tuple[File, float, str]]
+        required: false
+      ra0:
+        dtype: str
+        required: true
+      dec0:
+        dtype: str
+        required: true
+      max_radius_deg:
+        dtype: float
+        required: true
+      interesting_regions:
+        dtype: List[File]
+      search_box_radec:
+        dtype: Tuple[str,str,str,str]
+      search_box_frame:
+        dtype: str
+      search_box_label:
+        dtype: str
+      search_box_minflux:
+        dtype: str
+      base_catalog:
+        dtype: str
+      base_catalog_type:
+        dtype: str
+      add_catalog:
+        dtype: str
+      add_catalog_type:
+        dtype: str
+    outputs:
+      master_catalog:
+        dtype: File
+        required: true
+
+  save-ms-info:
+    flavour: python-code
+    name: save-ms-info
+    command: |
+      from omegaconf import OmegaConf
+      import casacore.tables
+      import numpy as np
+      tab = casacore.tables.table(ms)
+      info = OmegaConf.create()
+      info.timestamps = list(map(float, sorted(set(tab.getcol("TIME")))))
+      info.num_intervals = len(info.timestamps)
+      info.intervals = sorted(map(float, set(tab.getcol("INTERVAL"))))
+      print(f"MS has {info.num_intervals} timeslots of interval {info.intervals}")
+      info.total = [i*info.num_intervals/3600. for i in info.intervals]
+      print(f"Total synthesis time is {info.total}h")
+      field_tab = casacore.tables.table(ms + "::FIELD")
+      phase_dir = field_tab.getcol("PHASE_DIR")[0, 0]
+      info.field_ra = float(np.rad2deg(phase_dir[0]))
+      info.field_dec = float(np.rad2deg(phase_dir[1]))
+      print(f"Field centre (ra, dec) in degrees is ({info.field_ra}, {info.field_dec}).")
+      OmegaConf.save(info, ms_info_file)
+    inputs:
+      ms:
+        dtype: MS
+    outputs:
+      ms-info-file:
+        dtype: File
+
+  load-ms-info:
+    flavour: python-code
+    command: |
+      from omegaconf import OmegaConf
+      info = OmegaConf.load(ms_info_file)
+      num_intervals = info.num_intervals
+      field_ra_deg = info.field_ra
+      field_dec_deg = info.field_dec
+      delta_time = info.timestamps[1] - info.timestamps[0]
+    inputs:
+      ms-info-file:
+        dtype: File
+    outputs:
+      num_intervals:
+        dtype: int
+      delta-time:
+        dtype: float
+      field_ra_deg:
+        dtype: float
+      field_dec_deg:
+        dtype: float
+
+  make-plumber-beams:
+    info:
+      Plumber generates full Stokes primary beam models for radio interferometers using Zernike model
+      coefficients of the antenna aperture illumination pattern. The generated PB models are scaled and
+      matched to the input image coordinate system in order to use standard PB correction tools
+      (such as those found in CASA).
+      See https://github.com/ARDG-NRAO/plumber
+    command: plumber
+    inputs:
+      image:
+        info: FITS image (or cube) for which beams are to be generated
+        dtype: File
+        required: true
+        policies:
+          positional: true
+      coeffs:
+        info: CSV file containing beam coefficients
+        dtype: File
+        required: true
+        policies:
+          positional: true
+      padding:
+        dtype: int
+        info: 'Padding factor for aperture, affects smoothness of output beam  [default: 8]'
+      dish_dia:
+        dtype: float
+        info:
+          Diameter of the antenna dish. If not one of VLA,
+          ALMA, MeerKAT or GMRT, must be specified.
+      islinear:
+        dtype: bool
+        info:
+          Specifies if the telescope has linear feeds. If not
+          one of VLA, ALMA, MeerKAT or GMRT, must be specified
+      stokesI:
+        dtype: bool
+        info:
+          Only generate the Stokes I beam, not the full Stokes beams
+      parallel:
+        dtype: bool
+      parang:
+        dtype: Union[float, Tuple[float, float]]
+        info:
+          Beginning (and optionally end) parallactic angle for the PB
+        policies:
+          repeat: repeat
+
+  mdv-beams-to-power-beam:
+    command: beam_utils.mdv_beams_to_power_beam
+    flavour: python
+    inputs:
+      mdv_beams:
+        dtype: File
+    outputs:
+      power_beam:
+        dtype: File
+
+  derive-power-beam:
+    command: beam_utils.derive_power_beam
+    flavour: python
+    inputs:
+      cube:
+        dtype: File
+        required: true
+      images:
+        dtype: List[File]
+        required: true
+      power_beam:
+        dtype: File
+        required: true
+      nband:
+        dtype: int
+    outputs:
+      beaminfo:
+        dtype: File
+        required: true
+      outcube:
+        dtype: File
+        required: false
+
+  quartical:
+    outputs:
+      corrected_data_column:
+        dtype: str
+        required: false
+
+lib:
+  recipes:
+    make_masks:
+      name: make_masks
+      info: "makes a series of mask images based on a restored image"
+
+      inputs:
+        prefix:
+          dtype: str
+        skip-regions:
+          dtype: File
+
+      outputs:  # Workaround for issue below.
+        mask:
+          dtype: File
+
+      aliases:
+        # inputs
+        restored-image: mask.restored-image
+        threshold: mask.threshold
+        dilate: mask.dilate
+        # outputs
+        # mask: mask.mask  # https://github.com/caracal-pipeline/stimela/issues/287
+
+      defaults:
+        threshold: 6.5
+        dilate: 2
+
+      steps:
+        mask:
+          cab: breizorro
+          params:
+            mask: "{recipe.mask}"
+
+  steps:
+    wsclean:
+      base:
+        info: "base wsclean settings"
+        cab: wsclean
+        params:
+          padding: 1.3
+          nwlayers-factor: 3
+          use-wgridder: true
+          log-time: true
+          ms: '{recipe.ms-path}'
+          prefix: '{recipe.image-prefix}'
+          size: '{recipe.wsclean_size}'
+          scale: '{recipe.pixel_scale}asec'
+          nchan: '{recipe.wsclean_nchan}'
+          temp-dir: '{recipe.dirs.temp}'
+          column: SELFCAL{info.suffix}_DATA
+          threads: '{recipe.wsclean_threads}'
+
+      dirty:
+        _use: lib.steps.wsclean.base
+        info: "wsclean step for dirty-only image"
+        params:
+          column: CORRECTED_DATA
+          niter: 0
+
+      image:
+        _use: lib.steps.wsclean.dirty
+        info: "wsclean step for imaging"
+        params:
+          niter: 1000000
+          mgain: 0.9
+          nmiter: 10
+          auto-threshold: =recipe.wsclean_auto_thresh
+          baseline-averaging: 12
+          no-update-model-required: true
+          auto-mask: =IFSET(current.fits-mask, UNSET, recipe.wsclean_auto_mask)
+          fit-beam: true
+          elliptical-beam: true
+          join-channels: true
+
+      image_pol:
+        _use: lib.steps.wsclean.image
+        info: "wsclean step for IQUV imaging"
+        params:
+          join-polarizations: true
+          fit-spectral-pol: =UNSET
+          pol: IQUV
+          mgain: 0.9
+
+      image_column:
+        _use:
+          - lib.steps.wsclean.image
+        params:
+          fit-spectral-pol: 4
+          join-channels: true
+          save-source-list: true
+          column: SELFCAL{info.suffix}_DATA
+
+      image_column_pol:
+        _use:
+          - lib.steps.wsclean.image_pol
+        params:
+          column: SELFCAL{info.suffix}_DATA
+
+      predict:
+        _use: lib.steps.wsclean.base
+        info: "wsclean step for predicting a model"
+        params:
+          predict: true
+
+    quartical:
+      quartical:
+      base:
+        cab: quartical
+        params:
+          output:
+            overwrite: true
+            products: [corrected_data]
+            columns: [CORRECTED_DATA]
+      k:
+        _use: lib.steps.quartical.base
+        params:
+          corrected_data_column: SELFCAL{info.suffix}_DATA
+          input_ms:
+            path: =recipe.ms-path
+          input_model:
+            recipe: MODEL_DATA
+          solver:
+            terms: [K]
+            iter_recipe: [50]
+          output:
+            gain_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
+            log_directory: "{recipe.dir-out}/cal-{info.suffix}{recipe.variant}"
+            products: [corrected_data]
+            columns: [=current.corrected_data_column]
+          mad_flags:
+            enable: =root.mad_flag
+            threshold_bl: 8
+          K:
+            time_interval: 0
+            freq_interval: 0
+            type: delay_and_offset
