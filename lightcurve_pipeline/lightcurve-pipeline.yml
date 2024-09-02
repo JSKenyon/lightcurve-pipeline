@@ -7,6 +7,7 @@ _include:
   - (breifast.recipes)tron.yml
   - (breifast.recipes)tron-breifast.yml
   - (breifast.recipes)tron-lightcurves.yml
+  - (cultcargo)tricolour.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:
@@ -43,7 +44,7 @@ lightcurve-pipeline:
 
   inputs:
     obs:
-      choices: [meerkat_uhf_test, meerkat_l_test, ata_test]
+      choices: [meerkat_uhf_test, meerkat_l_test, ata_test, scintillators_test]
       info: "Selects observation, see datasets.yml for list of observations."
       default: ata_test
     output-suffix:
@@ -136,6 +137,14 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         mode: restore
         versionname: =recipe.initial-flag-version
+
+    flag-data-1:
+      cab: tricolour
+      params:
+        ms: =recipe.ms-path
+        config: flagging_strategies/gorbachev.yaml
+        flagging-strategy: total_power
+        data-column: DATA
 
     image-1:
       info: |

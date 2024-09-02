@@ -62,3 +62,23 @@ obs:
     # psf_size: 6
     # minuv-l: 700
     # taper-inner-tukey: 100
+  scintillators_test:
+    dirs.ms: "{config.run.env.HOME}/projects/HB-scintillators/msdir/l1"
+    dirs.base: "{config.run.env.HOME}/projects/HB-scintillators/outputs"
+    dirs.sub: "scintillators_test"
+    ms-name: "1697748080_sdp_l0.J0425-5906.ms"
+    wsclean_threads: 16
+    wsclean_size: 13000
+    wsclean_nchan: 8
+    wsclean_auto_mask: 5
+    wsclean_auto_thresh: 2
+    weight: "briggs 0"
+    pixel_scale: 0.8
+    htc_size: 3072
+    htc_scale: 2.4arcsec
+    htc_cadence: 1
+    htc_weight: "briggs 0"
+    lightcurves-within: 1deg
+    initial-flag-version: "original_flags"
+    ncpu: 16  # For some breifast steps.
+    nlc: 100  # Extract top N lightcurves.
