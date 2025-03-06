@@ -226,7 +226,7 @@ lightcurve-pipeline:
 
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
-      recipe: tron_wrapper
+      recipe: tron-wrapper
       backend:
         select: native
       params:
@@ -252,8 +252,8 @@ lightcurve-pipeline:
       tags: [breifast]
 
 
-tron_wrapper:
-  _use: tron_base
+tron-wrapper:
+  _use: tron-base
   inputs:
     ms:
       info: measurement set
