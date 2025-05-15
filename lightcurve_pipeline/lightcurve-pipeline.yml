@@ -148,11 +148,10 @@ lightcurve-pipeline:
     mask-1:
       info: |
         Make a mask for the field using breizorro.
-      recipe: make_masks
+      cab: breizorro
       params:
-        restored-image: "{previous.restored.mfs}"
-        prefix: "{previous.prefix}"
-        mask: "{current.prefix}-mask.fits"
+        restored-image: "{previous.prefix}-MFS-image.fits"
+        dilate: 2
 
     flagsummary-1:
       info: |
@@ -194,7 +193,7 @@ lightcurve-pipeline:
       _use: lib.steps.wsclean.image_column
       params:
         column: =steps.selfcal-*.corrected_data_column
-        fits-mask: =steps.mask-*.mask
+        fits-mask: =steps.mask-*.outfile
         auto-threshold: 1
 
     predict-2:
@@ -214,6 +213,7 @@ lightcurve-pipeline:
       params:
         msname: =recipe.ms-path
         colname: CORRECTED_DATA
+        likecol: DATA
 
     subtract-model:
       info: |

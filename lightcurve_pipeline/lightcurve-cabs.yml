@@ -1,7 +1,7 @@
 _include:
   (cultcargo):
     - wsclean.yml
-    - casa-flag.yml
+    - casa/flag.yml
     - breizorro.yml
     - quartical.yml
     - cubical.yml
@@ -11,7 +11,7 @@ _include:
     - msutils.yml
     - fitstool.yml
     - bdsf.yml
-    - tigger.yml
+    - tigger-convert.yml
 
 
 cabs:
@@ -318,39 +318,6 @@ cabs:
         required: false
 
 lib:
-  recipes:
-    make_masks:
-      name: make_masks
-      info: "makes a series of mask images based on a restored image"
-
-      inputs:
-        prefix:
-          dtype: str
-        skip-regions:
-          dtype: File
-
-      outputs:  # Workaround for issue below.
-        mask:
-          dtype: File
-
-      aliases:
-        # inputs
-        restored-image: mask.restored-image
-        threshold: mask.threshold
-        dilate: mask.dilate
-        # outputs
-        # mask: mask.mask  # https://github.com/caracal-pipeline/stimela/issues/287
-
-      defaults:
-        threshold: 6.5
-        dilate: 2
-
-      steps:
-        mask:
-          cab: breizorro
-          params:
-            mask: "{recipe.mask}"
-
   steps:
     wsclean:
       base:
