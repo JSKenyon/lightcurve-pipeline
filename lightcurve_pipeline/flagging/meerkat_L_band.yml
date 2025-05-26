@@ -96,7 +96,7 @@ meerkat-l-band-target-flagging:
       cab: casa.flagdata
       params:
         ms: =recipe.ms-name
-        spw: =recipe.CAL_1GC_BAD_FREQS
+        spw: =recipe.CAL_1GC_BL_FREQS
         mode: 'manual'
         uvrange: =recipe.CAL_1GC_BL_FLAG_UVRANGE
 
