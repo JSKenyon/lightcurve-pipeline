@@ -227,8 +227,6 @@ lightcurve-pipeline:
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
       recipe: tron-wrapper
-      backend:
-        select: native
       params:
         obs: =recipe.obs
         ms: =recipe.ms-path
