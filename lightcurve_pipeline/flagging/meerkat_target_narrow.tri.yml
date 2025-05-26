@@ -1,4 +1,4 @@
-# Narrow sumthreshol
+# Narrow sumthreshold, taken from oxkat (https://github.com/IanHeywood/oxkat).
 strategies:
     -
         name: final_st_broad
