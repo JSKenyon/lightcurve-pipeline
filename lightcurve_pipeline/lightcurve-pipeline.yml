@@ -2,11 +2,7 @@
 
 _include:
   - lightcurve-cabs.yml
-  - (breifast.cabs)breifast.yml
-  - (breifast.cabs)tron-cabs.yml
   - (breifast.recipes)tron.yml
-  - (breifast.recipes)tron-breifast.yml
-  - (breifast.recipes)tron-lightcurves.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:
@@ -22,7 +18,10 @@ opts:
 
 lightcurve-pipeline:
   name: lightcurve-pipeline
-  info: "Generic pipeline for extracting lightcurves from interferometer data."
+  info: |
+    Generic pipeline for extracting lightcurves from interferometer data.
+    Currently tailored for processing MeerKAT L1 visibilities averaged down
+    to 1k.
 
   assign:
     dir-out: '{recipe.dirs.base}/{recipe.dirs.sub}{recipe.output-suffix}'  # output products go here
@@ -31,12 +30,6 @@ lightcurve-pipeline:
     # some more directory assignments
     dirs.temp: "{recipe.dirs.base}/tmp"  # temp files go here
     ms-path: "{recipe.dirs.ms}/{recipe.ms-name}"
-
-    # _chan1x: =recipe.chan1 - 1       # end channel, inclusive -- helper variable to form CASA spw
-    casa-spw: 0 #"0:{recipe.chan0}~{recipe._chan1x}"  # CASA spw parameter
-
-    # extra lightcurve suffix, added if convolving
-    lc-suffix: =IF(recipe.convolve.arcsec or recipe.convolve.time, "-{recipe.convolve.time:.0f}s-{recipe.convolve.arcsec:.0f}asec", "")
 
   assign_based_on:
     _include: datasets.yml
@@ -159,7 +152,7 @@ lightcurve-pipeline:
       cab: casa.flagsummary
       params:
         ms: =recipe.ms-path
-        spw: =recipe.casa-spw
+        # spw: =recipe.casa-spw
 
     predict-1:
       info: |
@@ -184,7 +177,7 @@ lightcurve-pipeline:
       cab: casa.flagsummary
       params:
         ms: =recipe.ms-path
-        spw: =recipe.casa-spw
+        # spw: =recipe.casa-spw
 
     image-2:
       info: |
