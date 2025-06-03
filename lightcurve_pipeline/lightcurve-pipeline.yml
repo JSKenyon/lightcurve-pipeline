@@ -24,11 +24,15 @@ lightcurve-pipeline:
     to 1k.
 
   assign:
-    dir-out: '{recipe.dirs.base}/{recipe.dirs.sub}{recipe.output-suffix}'  # output products go here
-    image-prefix: '{recipe.dir-out}/im{info.suffix}{recipe.variant}/im{info.suffix}{recipe.variant}'  # prefix for image names at each step
-    log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'  # put logs into output dir
-    # some more directory assignments
-    dirs.temp: "{recipe.dirs.base}/tmp"  # temp files go here
+    # Output products go here. These paths are set in datasets.yml.
+    dir-out: '{recipe.dirs.base}/{recipe.dirs.sub}{recipe.output-suffix}'
+    # Prefix for image names at each step. Includes full output path.
+    image-prefix: '{recipe.dir-out}/im{info.suffix}{recipe.variant}/im{info.suffix}{recipe.variant}'
+    # Redirect logs to the output directory.
+    log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'
+    # Set up a tempoerary directory (used by some steps).
+    dirs.temp: "{recipe.dirs.base}/tmp"
+    # Form up the full path to the measurement set.
     ms-path: "{recipe.dirs.ms}/{recipe.ms-name}"
 
   assign_based_on:
