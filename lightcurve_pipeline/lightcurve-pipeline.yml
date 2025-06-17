@@ -2,6 +2,7 @@
 
 _include:
   - lightcurve-cabs.yml
+  - flagging/meerkat_1k_basic.yml
   - (breifast.recipes)tron.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
@@ -92,6 +93,13 @@ lightcurve-pipeline:
       - (wsclean).taper-inner-tukey
 
   steps:
+    basic-flagging:
+      recipe: meerkat-target-flagging
+      params:
+        ms-list:
+          - =recipe.ms-path
+        band: UHF #"{recipe.band}"  # Why does this break?
+
     flag-save:
       info: |
         Create a backup of the original flags on the dataset. This step is only

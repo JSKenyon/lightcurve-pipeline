@@ -2,7 +2,7 @@ obs:
   meerkat_uhf_test:
     dirs.ms: "{config.run.env.HOME}/SMC/msdir"
     dirs.base: "{config.run.env.HOME}/SMC/outputs"
-    dirs.sub: meerkat_uhf_test
+    dirs.sub: meerkat_uhf_test2
     ms-name: "1581006914_sdp_l0_1024ch_SMC.ms"
     wsclean_threads: 16
     wsclean_size: 8192
@@ -40,7 +40,7 @@ obs:
     initial-flag-version: "original_flags"
     ncpu: 16  # For some breifast steps.
     nlc: 100  # Extract top N lightcurves.
-    band: X  # Not currently configured.
+    band: L  # Not currently configured.
   meerkat_l_test:
     dirs.ms: "{config.run.env.HOME}/ConjBoom/msdir"
     dirs.base: "{config.run.env.HOME}/ConjBoom/outputs"
