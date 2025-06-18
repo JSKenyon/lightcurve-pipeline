@@ -95,21 +95,10 @@ lightcurve-pipeline:
   steps:
     basic-flagging:
       recipe: meerkat-target-flagging
+      skip_if_outputs: exist
       params:
-        ms-list:
-          - =recipe.ms-path
+        ms-name: =recipe.ms-path
         band: =recipe.band
-
-    flag-save:
-      info: |
-        Create a backup of the original flags on the dataset. This step is only
-        run when the init tag is selected.
-      tags: [init, never]
-      cab: casa.flagman
-      params:
-        ms: =recipe.ms-path
-        mode: save
-        versionname: =recipe.initial-flag-version
 
     save-ms-info:
       info: |
