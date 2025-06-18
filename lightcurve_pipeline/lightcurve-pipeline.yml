@@ -98,7 +98,7 @@ lightcurve-pipeline:
       params:
         ms-list:
           - =recipe.ms-path
-        band: UHF #"{recipe.band}"  # Why does this break?
+        band: =recipe.band
 
     flag-save:
       info: |
