@@ -107,8 +107,8 @@ lightcurve-pipeline:
 
     flag-reset:
       info: |
-        Restore the original flags to the dataset. The flag-save step must have
-        been run once for this step to work.
+        Restore the flags to their state after the inital flagging step. The
+        basic-flagging step must have been run once for this step to work.
       cab: casa.flagman.restore
       params:
         ms: =recipe.ms-path
