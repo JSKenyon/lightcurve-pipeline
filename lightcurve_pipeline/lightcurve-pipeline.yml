@@ -94,16 +94,30 @@ lightcurve-pipeline:
 
   steps:
     basic-flagging:
+      info: |
+        Run a basic flagging subrecipe, based on Oxkat, which will flag known
+        RFI bands and do a basic tricolour run (which assumes that the data has
+        been averaged down to 1024 channels). The subrecipe will back up the
+        original flags before running.
       recipe: meerkat-target-flagging
       skip_if_outputs: exist
       params:
         ms-name: =recipe.ms-path
         band: =recipe.band
 
+    flag-reset:
+      info: |
+        Restore the original flags to the dataset. The flag-save step must have
+        been run once for this step to work.
+      cab: casa.flagman.restore
+      params:
+        ms: =recipe.ms-path
+        versionname: =previous.updated-flag-versionname
+
     save-ms-info:
       info: |
         Run some custom python code to extract some useful metadata
-        from the dataset
+        from the dataset.
       tags: [always]
       cab: save-ms-info
       skip_if_outputs: exist
@@ -120,16 +134,6 @@ lightcurve-pipeline:
       cab: load-ms-info
       params:
         ms-info-file: =steps.save-ms-info.ms-info-file
-
-    flag-reset:
-      info: |
-        Restore the original flags to the dataset. The flag-save step must have
-        been run once for this step to work.
-      cab: casa.flagman
-      params:
-        ms: =recipe.ms-path
-        mode: restore
-        versionname: =recipe.initial-flag-version
 
     image-1:
       info: |
