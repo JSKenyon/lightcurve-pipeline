@@ -116,36 +116,40 @@ meerkat-target-flagging:
         CAL_1GC_BL_FREQS: ''
 
   inputs:
-    ms-list:
-      dtype: List[MS]
+    ms-name:
+      dtype: MS
+      required: true
     band:
       dtype: str
       choices: [UHF, L, S0, S1, S2, S3, S4]
+      required: true
 
-  for_loop:
-    var: ms-name
-    over: ms-list
+  outputs:
+    updated-flags:  # Arbitrary output name which maps...
+      aliases:
+        - flag-save-post.flagversions-table  # ...to this value.
+    updated-flag-versionname:
+      dtype: str
+      default: 'meerkat-{current.band}-band-target-flagging'
 
   steps:
     flag-save-prior:
       info: |
         Create a backup of the flags on the dataset. This step is only
         run when the init tag is selected.
-      tags: [init, never]
-      cab: casa.flagman
+      skip_if_outputs: exist
+      cab: casa.flagman.save
       params:
         ms: =recipe.ms-name
-        mode: save
         versionname: 'pre-meerkat-{recipe.band}-band-target-flagging'
 
     flag-load:
       info: |
         Restore the original flags to the dataset. The flag-save step must have
         been run once for this step to work.
-      cab: casa.flagman
+      cab: casa.flagman.restore
       params:
         ms: =recipe.ms-name
-        mode: restore
         versionname: =recipe.steps.flag-save-prior.versionname
 
     flag-known-rfi-bands:
@@ -200,8 +204,7 @@ meerkat-target-flagging:
     flag-save-post:
       info: |
         Create a backup of the flags on the dataset after the recipe has run.
-      cab: casa.flagman
+      cab: casa.flagman.save
       params:
         ms: =recipe.ms-name
-        mode: save
         versionname: 'meerkat-{recipe.band}-band-target-flagging'

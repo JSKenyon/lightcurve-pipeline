@@ -2,7 +2,7 @@ obs:
   meerkat_uhf_test:
     dirs.ms: "{config.run.env.HOME}/SMC/msdir"
     dirs.base: "{config.run.env.HOME}/SMC/outputs"
-    dirs.sub: meerkat_uhf_test
+    dirs.sub: meerkat_uhf_test2
     ms-name: "1581006914_sdp_l0_1024ch_SMC.ms"
     wsclean_threads: 16
     wsclean_size: 8192
@@ -19,11 +19,12 @@ obs:
     initial-flag-version: "original_flags"
     ncpu: 16  # For some breifast steps.
     nlc: 100  # Extract top N lightcurves.
+    band: UHF
   ata_test:
     dirs.ms: "{config.run.env.HOME}/ATA_experiments/msdir"
     dirs.base: "{config.run.env.HOME}/ATA_experiments/outputs"
     dirs.sub: ata_test
-    ms-name: "SN2023ixf_noauto_1GC.ms"
+    ms-name: SN2023ixf_noauto_1GC.SPW0.ms
     wsclean_threads: 16
     wsclean_size: 2048
     wsclean_nchan: 8
@@ -39,6 +40,7 @@ obs:
     initial-flag-version: "original_flags"
     ncpu: 16  # For some breifast steps.
     nlc: 100  # Extract top N lightcurves.
+    band: L  # Not currently configured.
   meerkat_l_test:
     dirs.ms: "{config.run.env.HOME}/ConjBoom/msdir"
     dirs.base: "{config.run.env.HOME}/ConjBoom/outputs"
@@ -59,6 +61,4 @@ obs:
     initial-flag-version: "original_flags"
     ncpu: 16  # For some breifast steps.
     nlc: 100  # Extract top N lightcurves.
-    # psf_size: 6
-    # minuv-l: 700
-    # taper-inner-tukey: 100
+    band: L
