@@ -20,15 +20,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy"
 ]
 requires_python = ">=3.10, <3.11"
-dependencies = [
-    "stimela @ git+https://github.com/caracal-pipeline/stimela.git@issue-447",
-    "cult-cargo @ git+https://github.com/caracal-pipeline/cult-cargo.git@master"
-]
+dynamic = [ "dependencies" ]
 
-[project.optional-dependencies]
-local = [
-    "breifast @ git+https://github.com/ratt-ru/breifast.git@master"
-]
+[tool.poetry.dependencies]
+stimela = { git = "https://github.com/caracal-pipeline/stimela.git", branch = "issue-447"}
+cult-cargo = { git = "https://github.com/caracal-pipeline/cult-cargo.git", branch = "master" }
+breifast-tron = { git = "https://github.com/ratt-ru/breifast.git", branch = "master", subdirectory = "breifast-tron" }
 
 [build-system]
 requires = ["poetry-core"]
