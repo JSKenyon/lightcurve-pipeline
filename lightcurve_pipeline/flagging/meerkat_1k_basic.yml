@@ -3,19 +3,6 @@ _include:
     - casa/flag.yml
     - tricolour.yml
 
-## this augments the standard 'opts' config section to tweak logging settings
-opts:
-  log:
-    dir: logs/log-{config.run.datetime}
-    name: log-{info.fqname}
-    nest: 2
-    symlink: log
-  backend:
-    select: singularity
-    rlimits:
-      NOFILE: 100000  # set high limit on number of open files
-
-
 meerkat-target-flagging:
   name: meerkat-target-flagging
   info: |
@@ -116,7 +103,7 @@ meerkat-target-flagging:
         CAL_1GC_BL_FREQS: ''
 
   inputs:
-    ms-name:
+    ms-path:
       dtype: MS
       required: true
     band:
@@ -140,7 +127,7 @@ meerkat-target-flagging:
       skip_if_outputs: exist
       cab: casa.flagman.save
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         versionname: 'pre-meerkat-{recipe.band}-band-target-flagging'
 
     flag-load:
@@ -149,14 +136,14 @@ meerkat-target-flagging:
         been run once for this step to work.
       cab: casa.flagman.restore
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         versionname: =recipe.steps.flag-save-prior.versionname
 
     flag-known-rfi-bands:
       info: Flag known L-band RFI ranges.
       cab: casa.flagdata
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         spw: =recipe.CAL_1GC_BAD_FREQS
         mode: 'manual'
 
@@ -164,7 +151,7 @@ meerkat-target-flagging:
       info: Flag known L-band RFI ranges on specific baselines.
       cab: casa.flagdata
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         spw: =recipe.CAL_1GC_BL_FREQS
         mode: 'manual'
         uvrange: =recipe.CAL_1GC_BL_FLAG_UVRANGE
@@ -173,7 +160,7 @@ meerkat-target-flagging:
       info: Flag all autocorrelations.
       cab: casa.flagdata
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         mode: 'manual'
         autocorr: true
 
@@ -181,7 +168,7 @@ meerkat-target-flagging:
       info: Flag zero data.
       cab: casa.flagdata
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         mode: 'clip'
         clipzeros: true
 
@@ -189,14 +176,14 @@ meerkat-target-flagging:
       info: Flag values with very large values.
       cab: casa.flagdata
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         mode: 'clip'
         clipminmax: [0, 100]
 
     flag-polarisation:
       cab: tricolour
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         config: "${self:dirname}/meerkat_target_narrow.tri.yml"
         flagging-strategy: polarisation
         data-column: DATA
@@ -206,5 +193,5 @@ meerkat-target-flagging:
         Create a backup of the flags on the dataset after the recipe has run.
       cab: casa.flagman.save
       params:
-        ms: =recipe.ms-name
+        ms: =recipe.ms-path
         versionname: 'meerkat-{recipe.band}-band-target-flagging'
