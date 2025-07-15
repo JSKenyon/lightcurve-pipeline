@@ -25,31 +25,33 @@ lightcurve-pipeline:
     to 1k.
 
   assign:
-    # Output products go here. These paths are set in datasets.yml.
-    dir-out: '{recipe.dirs.base}/{recipe.dirs.sub}{recipe.output-suffix}'
     # Prefix for image names at each step. Includes full output path.
-    image-prefix: '{recipe.dir-out}/im{info.suffix}{recipe.variant}/im{info.suffix}{recipe.variant}'
+    image-prefix: '{recipe.outdir-path}/im{info.suffix}/im{info.suffix}'
     # Redirect logs to the output directory.
-    log.dir: '{recipe.dir-out}/logs/log-{config.run.datetime}'
-    # Set up a tempoerary directory (used by some steps).
-    dirs.temp: "{recipe.dirs.base}/tmp"
-    # Form up the full path to the measurement set.
-    ms-path: "{recipe.dirs.ms}/{recipe.ms-name}"
+    log.dir: '{recipe.outdir-path}/logs/log-{config.run.datetime}'
+    # Set up a temporary directory (used by some steps).
+    tempdir-path: '{recipe.outdir-path}/tmp'
+    # Extract the ms name from the full path.
+    ms-name: =BASENAME(recipe.ms-path)
 
   assign_based_on:
-    _include: datasets.yml
+    _include: configurations.yml
 
   inputs:
-    obs:
-      choices: [meerkat_uhf_test, meerkat_l_test, ata_test]
-      info: "Selects observation, see datasets.yml for list of observations."
-      default: ata_test
-    output-suffix:
-      dtype: str
-      default: ''
-    variant:
-      dtype: str
-      default: ''
+    ms-path:
+      dtype: MS
+      info: Path to input Measurement Set.
+      required: true
+    configuration:
+      choices: [meerkat_l_band, meerkat_uhf_band, ata]
+      info: "Sets a number of default values based on the telescope and band."
+      required: true
+    outdir-path:
+      dtype: Directory
+      required: true
+      writable: true
+      path_policies:
+        mkdir_parent: true
     htc_cadence:
       dtype: int
       default: 1
@@ -75,18 +77,6 @@ lightcurve-pipeline:
       aliases:
         - (quartical).mad_flags.enable
 
-  aliases:
-    ms:
-      - (wsclean).ms
-      - (quartical).input_ms.path
-    weight:
-      - (wsclean).weight
-      - (wsclean_pol).weight
-    minuv-l:
-      - (wsclean).minuv-l
-    taper-inner-tukey:
-      - (wsclean).taper-inner-tukey
-
   steps:
     basic-flagging:
       info: |
@@ -97,7 +87,7 @@ lightcurve-pipeline:
       recipe: meerkat-target-flagging
       skip_if_outputs: exist
       params:
-        ms-name: =recipe.ms-path
+        ms-path: =recipe.ms-path
         band: =recipe.band
 
     flag-reset:
@@ -189,10 +179,11 @@ lightcurve-pipeline:
       info: Run the tron pipeline for image plane transient detection.
       recipe: tron-wrapper
       params:
-        obs: =recipe.obs
+        obs: dummy
         ms: =recipe.ms-path
-        dirs.temp: =recipe.dirs.temp
-        dirs.cubes: '{recipe.dir-out}/cubes'
+        dir-out: '{recipe.outdir-path}/breifast'
+        dirs.temp: =recipe.tempdir-path
+        dirs.cubes: '{current.dir-out}/cubes'
         column.residual: CORRECTED_DATA
         deep-image: =steps.image-2.restored.mfs
         htc:
@@ -202,12 +193,12 @@ lightcurve-pipeline:
           weight: =recipe.htc_weight
           convolve:
             arcsec: 8
-        dir-out: =recipe.dir-out
-        nlc: =recipe.nlc
-        ncpu: =recipe.ncpu
+        nlc: 100
+        ncpu: 48
         stokes: [I]
         enable-hdf5: false
         enable-fits: true
+        publish-plot-title: ""
       tags: [breifast]
 
 
