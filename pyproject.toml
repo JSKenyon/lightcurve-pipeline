@@ -1,14 +1,14 @@
-[tool.poetry]
+[project]
 name = "lightcurve-pipeline"
 version = "0.0.0"
 description = "Basic pipeline for post-1GC lightcurve extraction."
-repository = "https://github.com/joesbright/parrot-stew-recipes"
+repository = "https://github.com/JSKenyon/lightcurve-pipeline"
 authors = [
-    "Oleg Smirnov <osmirnov@gmail.com >",
-    "Joe Bright <joe.bright@physics.ox.ac.uk>",
-    "Jonathan Kenyon <jonathan.simon.kenyon@gmail.com>",
+    { name = "Jonathan Kenyon", email = "jonosken@gmail.com" },
+    { name = "Joe Bright", email = "joe.bright@physics.ox.ac.uk" },
+    { name = "Oleg Smirnov", email = "osmirnov@gmail.com" }
 ]
-license = "MIT"
+license = { text = "MIT" }
 readme = "README.md"
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -16,17 +16,16 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Astronomy"
 ]
-packages = [{include = "lightcurve_pipeline"}]
+requires_python = ">=3.10, <3.11"
+dynamic = [ "dependencies" ]
 
 [tool.poetry.dependencies]
-python = ">=3.10, <3.11"
-stimela = { git = "https://github.com/caracal-pipeline/stimela.git", branch = "master"}
+stimela = { git = "https://github.com/caracal-pipeline/stimela.git", branch = "issue-447"}
 cult-cargo = { git = "https://github.com/caracal-pipeline/cult-cargo.git", branch = "master" }
-breifast = { git = "ssh://git@github.com/ratt-ru/breifast.git", branch = "master" }
+breifast-tron = { git = "https://github.com/ratt-ru/breifast.git", branch = "master", subdirectory = "breifast-tron" }
 
 [build-system]
 requires = ["poetry-core"]
