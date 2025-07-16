@@ -32,7 +32,7 @@ target-masking:
       required: true
     scale:
       dtype: Union[str,float]
-      default: '1.2asec'
+      default: '3asec'
     weight:
       dtype: str
       default: 'briggs 0.0'

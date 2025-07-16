@@ -3,6 +3,7 @@
 _include:
   - lightcurve-cabs.yml
   - flagging/meerkat_1k_basic.yml
+  - masking/masking.yml
   - (breifast.recipes)tron.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
@@ -105,6 +106,17 @@ lightcurve-pipeline:
       cab: casa.flagsummary
       params:
         ms: =recipe.ms-path
+
+    masking-1:
+      info: |
+        Use wsclean and breizorro to construct an initial mask for the field.
+      recipe: target-masking
+      params:
+        ms-path: =recipe.ms-path
+        data-column: DATA
+        image-prefix: target
+        outdir-path: '{recipe.outdir-path}/{info.label}'
+      skip_if_outputs: exist
 
     image-1:
       info: |
