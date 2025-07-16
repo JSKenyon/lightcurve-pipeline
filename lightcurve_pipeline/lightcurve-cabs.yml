@@ -25,6 +25,40 @@ cabs:
 lib:
   steps:
     wsclean:
+      masking-base:
+        info: "Base wsclean settings for masking, adapted from Oxkat."
+        cab: wsclean
+        params:
+          # General
+          mem: 90
+          parallel-reordering: 8
+          threads: 16
+          # Outputs
+          make-psf: false
+          no-dirty: false
+          save-source-list: true
+          # Data selection
+          field: 0
+          # Gridding / degridding
+          wgridder-accuracy: 5e-5
+          no-update-model-required: true
+          wstack-nwlayers-factor: 5  # Should this be set or left for wgridder?
+          # Deconvolution
+          parallel-deconvolution: 2560
+          multiscale: false
+          multiscale-scales: [0,3,9]
+          niter: 80000
+          gain: 0.15
+          mgain: 0.9
+          nchan: 8  # -channels-out in wsclean
+          fit-spectral-pol: 4
+          join-channels: true
+          circular-beam: true
+          # Masking
+          # abs-threshold: 1e-6
+          # auto-mask: 4.0
+          # auto-threshold: 1.0
+          # local-rms: true
       base:
         info: "base wsclean settings"
         cab: wsclean
@@ -89,7 +123,7 @@ lib:
           column: SELFCAL{info.suffix}_DATA
 
       predict:
-        _use: lib.steps.wsclean.base
+        cab: wsclean
         info: "wsclean step for predicting a model"
         params:
           predict: true
