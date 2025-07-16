@@ -53,6 +53,18 @@ lightcurve-pipeline:
       writable: true
       path_policies:
         mkdir_parent: true
+    scale:
+      dtype: Union[str,float]
+      default: '3asec'
+    weight:
+      dtype: str
+      default: 'briggs 0.0'
+    size:
+      dtype: int
+      default: 2048
+    abs-threshold:
+      dtype: float
+      default: 1e-3
     htc_cadence:
       dtype: int
       default: 1
@@ -107,42 +119,76 @@ lightcurve-pipeline:
       params:
         ms: =recipe.ms-path
 
-    masking-1:
-      info: |
-        Use wsclean and breizorro to construct an initial mask for the field.
-      recipe: target-masking
-      params:
-        ms-path: =recipe.ms-path
-        data-column: DATA
-        image-prefix: target
-        outdir-path: '{recipe.outdir-path}/{info.label}'
-      skip_if_outputs: exist
+    # masking-1:
+    #   info: |
+    #     Use wsclean and breizorro to construct an initial mask for the field.
+    #   recipe: target-masking
+    #   params:
+    #     ms-path: =recipe.ms-path
+    #     data-column: DATA
+    #     image-prefix: target
+    #     outdir-path: '{recipe.outdir-path}/{info.label}'
+    #   skip_if_outputs: exist
 
     image-1:
       info: |
-        Image and deconvolve the data using wsclean. Masking and thresholding
-        are handled automatically by wsclean. This may not work in all cases.
-      _use: lib.steps.wsclean.image_column
+        Image and deconvolve the data using wsclean. This initial round of
+        deconvolution proceeds up to an absolute threshold and is only used
+        for generating a mask.
+      _use: lib.steps.wsclean.masking-base
       params:
-        column: DATA  # Start from the contents of the DATA column.
+        ms: =recipe.ms-path
+        column: DATA  # -data-column in wsclean
+        prefix: '{recipe.image-prefix}'
+        temp-dir: '{recipe.outdir-path}/tmp'
+        scale: =recipe.scale
+        weight: =recipe.weight
+        size: =recipe.size
+        abs-threshold: =recipe.abs-threshold
+      skip_if_outputs: fresh
 
     mask-1:
       info: |
         Make a mask for the field using breizorro.
       cab: breizorro
       params:
-        restored-image: "{previous.prefix}-MFS-image.fits"
-        dilate: 2
+        restored-image: =previous.restored.mfs
+        threshold: 6
+        boxsize: 50
+        dilate: 3
+      skip_if_outputs: fresh
+
+    image-2:
+      info: |
+        Image and deconvolve the data using wsclean. This second round of
+        imaging uses the mask which was derived by the previous step. The
+        MODEL_DATA column is updated with the resulting visibilities.
+      _use: lib.steps.wsclean.masking-base
+      params:
+        ms: =recipe.ms-path
+        column: DATA  # -data-column in wsclean
+        prefix: '{recipe.image-prefix}'
+        temp-dir: '{recipe.outdir-path}/tmp'
+        scale: =recipe.scale
+        weight: =recipe.weight
+        size: =recipe.size
+        abs-threshold: =recipe.abs-threshold
+        fits-mask: '{steps.mask-1.outfile}'
+      skip_if_outputs: fresh
 
     predict-1:
       info: |
         Use wsclean to write the visibilities associated with the model to the
-        MODEL_DATA column.
+        MODEL_DATA column. This is done as a separate step to make it possible
+        to inspect the images before updating the MODEL_DATA column.
       _use: lib.steps.wsclean.predict
       params:
         ms: =recipe.ms-path
-        prefix: '{steps.image-1.prefix}'
-        nchan: '{steps.image-1.nchan}'
+        temp-dir: '{recipe.outdir-path}/tmp'
+        prefix: '{steps.image-2.prefix}'
+        nchan: '{steps.image-2.nchan}'
+        size: =recipe.size
+        scale: =recipe.scale
 
     selfcal-1:
       info: |
@@ -158,7 +204,7 @@ lightcurve-pipeline:
       params:
         ms: =recipe.ms-path
 
-    image-2:
+    image-3:
       info: |
         Image and deconvolve the selfcal corrected data using wsclean and a
         fits mask.
@@ -177,6 +223,8 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         prefix: =steps.image-2.prefix
         nchan: =steps.image-2.nchan
+        size: =recipe.size
+        scale: =recipe.scale
 
     subtract-model:
       info: |
