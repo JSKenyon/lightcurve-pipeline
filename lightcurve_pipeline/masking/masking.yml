@@ -50,7 +50,7 @@ target-masking:
       writable: true
       path_policies:
         mkdir_parent: true
-    mask-image:  # Arbitrary output name which maps...
+    output-mask:  # Arbitrary output name which maps...
       aliases:
         - make-mask.outfile  # ...to this value.
 
