@@ -1,0 +1,12 @@
+# Basic band and deep imaging parameters.
+band: UHF
+scale: 1.7asec
+weight: briggs -0.5
+size: 10240
+abs-threshold: 1e-6
+
+# High time resolution imaging parameters.
+htc_size: 3414
+htc_scale: 5.1asec
+htc_cadence: 1
+htc_weight: briggs 0

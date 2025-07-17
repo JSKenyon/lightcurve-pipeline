@@ -1,0 +1,12 @@
+# Basic band and deep imaging parameters.
+band: L  # Not currently configured for ATA.
+scale: '3asec'
+size: 2048
+weight: 'briggs 0'
+abs-threshold: 1e-3
+
+# High time resolution imaging parameters.
+htc_size: 2048
+htc_scale: 3asec
+htc_cadence: 1
+htc_weight: 'briggs 0'

@@ -35,60 +35,63 @@ lightcurve-pipeline:
     # Extract the ms name from the full path.
     ms-name: =BASENAME(recipe.ms-path)
 
-  assign_based_on:
-    _include: configurations.yml
-
   inputs:
     ms-path:
-      dtype: MS
       info: Path to input Measurement Set.
+      dtype: MS
       required: true
-    configuration:
-      choices: [meerkat_l_band, meerkat_uhf_band, ata]
-      info: "Sets a number of default values based on the telescope and band."
+    band:
+      info: |
+        Set the observing band which is used to automatically configure
+        certain parameters.
+      dtype: str
+      choices: [L, UHF]
       required: true
+    scale:
+      info: Pixel scale for the deep images.
+      dtype: Union[str,float]
+      default: '3asec'
+    weight:
+      info: Image weighting mode for the deep images.
+      dtype: str
+      default: 'briggs 0.0'
+    size:
+      info: Image size for the deep images.
+      dtype: int
+      default: 2048
+    abs-threshold:
+      info: Absulute pixel flux threshold for deconvolving the deep images.
+      dtype: float
+      default: 1e-3
+    htc_cadence:
+      info: |
+        The number in integrations per image in the high time resolution
+        imaging step.
+      dtype: int
+      default: 1
+    htc_size:
+      info: Image size for the high time resolution images.
+      dtype: int
+      default: 682
+    htc_scale:
+      info: Pixel scale for the high time resolution images.
+      dtype: str
+      default: 9asec
+    htc_weight:
+      info: Image weighting mode for the high time resolution images.
+      dtype: str
+      default: natural
+
+  outputs:
     outdir-path:
+      info: |
+        Path to the output directory in which the pipelie should store inputs
+        results.
       dtype: Directory
       required: true
       writable: true
       path_policies:
         mkdir_parent: true
-    scale:
-      dtype: Union[str,float]
-      default: '3asec'
-    weight:
-      dtype: str
-      default: 'briggs 0.0'
-    size:
-      dtype: int
-      default: 2048
-    abs-threshold:
-      dtype: float
-      default: 1e-3
-    htc_cadence:
-      dtype: int
-      default: 1
-    htc_size:
-      dtype: int
-      default: 512
-    htc_scale:
-      dtype: str
-      default: '{recipe.pixel_scale}'
-    htc_weight:
-      dtype: str
-      default: natural
-    convolve:
-      arcsec:
-        dtype: float
-        default: 0
-      time:
-        dtype: float
-        default: 120
-    mad_flag:
-      dtype: bool
-      default: false
-      aliases:
-        - (quartical).mad_flags.enable
 
   steps:
     basic-flagging:
@@ -227,7 +230,7 @@ lightcurve-pipeline:
         weight: =recipe.weight
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
-        fits-mask: '{steps.mask-1.outfile}'
+        fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
       skip_if_outputs: fresh
 
     predict-2:
@@ -245,7 +248,7 @@ lightcurve-pipeline:
         scale: =recipe.scale
         predict: true
 
-    subtract-model:
+    subtract-model:  # Replace with a second selfcal step?
       info: |
         Subtract the model visibilities from the corrected data to produce the
         corrected residuals.
@@ -258,26 +261,22 @@ lightcurve-pipeline:
       info: Run the tron pipeline for image plane transient detection.
       recipe: tron-wrapper
       params:
-        obs: dummy
+        obs: dummy  # Required, but unused.
         ms: =recipe.ms-path
         dir-out: '{recipe.outdir-path}/breifast'
         dirs.temp: =recipe.tempdir-path
         dirs.cubes: '{current.dir-out}/cubes'
         column.residual: CORRECTED_DATA
-        deep-image: =steps.image-2.restored.mfs
+        deep-image: =steps.image-3.restored.mfs
         htc:
           cadence: =recipe.htc_cadence
           size: =recipe.htc_size
           scale: =recipe.htc_scale
           weight: =recipe.htc_weight
-          convolve:
-            arcsec: 8
         nlc: 100
         ncpu: 48
         stokes: [I]
-        enable-hdf5: false
-        enable-fits: true
-        publish-plot-title: ""
+        publish-plot-title: ""  # Has recipe info in its default - override.
       tags: [breifast]
 
 
