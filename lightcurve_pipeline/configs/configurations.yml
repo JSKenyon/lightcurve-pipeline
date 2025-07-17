@@ -1,0 +1,56 @@
+configuration:
+  meerkat-uhf-band:
+    presets:
+      scale: '1.7asec'
+      weight: 'briggs -0.5'
+      size: 10240
+      abs-threshold: 1e-6
+
+  meerkat-l-band:
+    presets:
+      scale: '1.1asec'
+      weight: 'briggs -0.3'
+      size: 10240
+      abs-threshold: 1e-6
+
+  meerkat-s0-band:
+    presets:
+      scale: '0.65asec'
+      weight: 'briggs -0.3'
+      size: 10240
+      abs-threshold: 1e-6
+
+  meerkat-s1-band:
+    presets:
+      scale: '0.61asec'
+      weight: 'briggs -0.3'
+      size: 10240
+      abs-threshold: 1e-6
+
+  meerkat-s2-band:
+    presets:
+      scale: '0.58asec'
+      weight: 'briggs -0.3'
+      size: 10240
+      abs-threshold: 1e-6
+
+  meerkat-s3-band:
+    presets:
+      scale: '0.54asec'
+      weight: 'briggs -0.3'
+      size: 10240
+      abs-threshold: 1e-6
+
+  meerkat-s4-band:
+    presets:
+      scale: '0.5asec'
+      weight: 'briggs -0.3'
+      size: 10240
+      abs-threshold: 1e-6
+
+  ata:
+    presets:
+      scale: '3asec'
+      weight: 'briggs 0.0'
+      size: 2048
+      abs-threshold: 1e-3

@@ -3,17 +3,10 @@ _include:
     - wsclean.yml
     - breizorro.yml
     - quartical.yml
-    - cubical.yml
     - taql.yml
 
 cabs:
-  quartical:
-    outputs:
-      corrected_data_column:
-        dtype: str
-        required: false
-
-  testing:
+  debug-print:
     flavour: python-code
     command: |
       for arg in args:

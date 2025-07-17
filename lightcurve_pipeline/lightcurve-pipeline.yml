@@ -4,7 +4,6 @@ _include:
   - lightcurve-cabs.yml
   - lightcurve-steps.yml
   - flagging/meerkat_1k_basic.yml
-  - masking/masking.yml
   - (breifast.recipes)tron.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
@@ -36,60 +35,63 @@ lightcurve-pipeline:
     # Extract the ms name from the full path.
     ms-name: =BASENAME(recipe.ms-path)
 
-  assign_based_on:
-    _include: configurations.yml
-
   inputs:
     ms-path:
-      dtype: MS
       info: Path to input Measurement Set.
+      dtype: MS
       required: true
-    configuration:
-      choices: [meerkat_l_band, meerkat_uhf_band, ata]
-      info: "Sets a number of default values based on the telescope and band."
+    band:
+      info: |
+        Set the observing band which is used to automatically configure
+        certain parameters.
+      dtype: str
+      choices: [L, UHF]
       required: true
+    scale:
+      info: Pixel scale for the deep images.
+      dtype: Union[str,float]
+      default: '3asec'
+    weight:
+      info: Image weighting mode for the deep images.
+      dtype: str
+      default: 'briggs 0.0'
+    size:
+      info: Image size for the deep images.
+      dtype: int
+      default: 2048
+    abs-threshold:
+      info: Absulute pixel flux threshold for deconvolving the deep images.
+      dtype: float
+      default: 1e-3
+    htc_cadence:
+      info: |
+        The number in integrations per image in the high time resolution
+        imaging step.
+      dtype: int
+      default: 1
+    htc_size:
+      info: Image size for the high time resolution images.
+      dtype: int
+      default: 682
+    htc_scale:
+      info: Pixel scale for the high time resolution images.
+      dtype: str
+      default: 9asec
+    htc_weight:
+      info: Image weighting mode for the high time resolution images.
+      dtype: str
+      default: natural
+
+  outputs:
     outdir-path:
+      info: |
+        Path to the output directory in which the pipelie should store inputs
+        results.
       dtype: Directory
       required: true
       writable: true
       path_policies:
         mkdir_parent: true
-    scale:
-      dtype: Union[str,float]
-      default: '3asec'
-    weight:
-      dtype: str
-      default: 'briggs 0.0'
-    size:
-      dtype: int
-      default: 2048
-    abs-threshold:
-      dtype: float
-      default: 1e-3
-    htc_cadence:
-      dtype: int
-      default: 1
-    htc_size:
-      dtype: int
-      default: 512
-    htc_scale:
-      dtype: str
-      default: '{recipe.pixel_scale}'
-    htc_weight:
-      dtype: str
-      default: natural
-    convolve:
-      arcsec:
-        dtype: float
-        default: 0
-      time:
-        dtype: float
-        default: 120
-    mad_flag:
-      dtype: bool
-      default: false
-      aliases:
-        - (quartical).mad_flags.enable
 
   steps:
     basic-flagging:
@@ -125,12 +127,12 @@ lightcurve-pipeline:
         Image and deconvolve the data using wsclean. This initial round of
         deconvolution proceeds up to an absolute threshold and is only used
         for generating a mask.
-      _use: lib.steps.wsclean.masking-base
+      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
         prefix: '{recipe.image-prefix}'
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         scale: =recipe.scale
         weight: =recipe.weight
         size: =recipe.size
@@ -152,12 +154,12 @@ lightcurve-pipeline:
       info: |
         Image and deconvolve the data using wsclean. This second round of
         imaging uses the mask which was derived by the previous step.
-      _use: lib.steps.wsclean.masking-base
+      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
         prefix: '{recipe.image-prefix}'
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         scale: =recipe.scale
         weight: =recipe.weight
         size: =recipe.size
@@ -170,14 +172,15 @@ lightcurve-pipeline:
         Use wsclean to write the visibilities associated with the model to the
         MODEL_DATA column. This is done as a separate step to make it possible
         to inspect the images before updating the MODEL_DATA column.
-      _use: lib.steps.wsclean.predict
+      cab: wsclean
       params:
         ms: =recipe.ms-path
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         prefix: '{steps.image-2.prefix}'
         nchan: '{steps.image-2.nchan}'
         size: =recipe.size
         scale: =recipe.scale
+        predict: true
 
     selfcal-1:
       info: |
@@ -217,17 +220,17 @@ lightcurve-pipeline:
       info: |
         Image and deconvolve the data using wsclean. This third round of
         imaging uses the mask and the CORRECTED_DATA written by QuartiCal.
-      _use: lib.steps.wsclean.masking-base
+      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: CORRECTED_DATA  # -data-column in wsclean
         prefix: '{recipe.image-prefix}'
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         scale: =recipe.scale
         weight: =recipe.weight
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
-        fits-mask: '{steps.mask-1.outfile}'
+        fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
       skip_if_outputs: fresh
 
     predict-2:
@@ -235,16 +238,17 @@ lightcurve-pipeline:
         Use wsclean to write the visibilities associated with the model to the
         MODEL_DATA column. This is done as a separate step to make it possible
         to inspect the images before updating the MODEL_DATA column.
-      _use: lib.steps.wsclean.predict
+      cab: wsclean
       params:
         ms: =recipe.ms-path
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         prefix: '{steps.image-3.prefix}'
         nchan: '{steps.image-3.nchan}'
         size: =recipe.size
         scale: =recipe.scale
+        predict: true
 
-    subtract-model:
+    subtract-model:  # Replace with a second selfcal step?
       info: |
         Subtract the model visibilities from the corrected data to produce the
         corrected residuals.
@@ -257,26 +261,22 @@ lightcurve-pipeline:
       info: Run the tron pipeline for image plane transient detection.
       recipe: tron-wrapper
       params:
-        obs: dummy
+        obs: dummy  # Required, but unused.
         ms: =recipe.ms-path
         dir-out: '{recipe.outdir-path}/breifast'
         dirs.temp: =recipe.tempdir-path
         dirs.cubes: '{current.dir-out}/cubes'
         column.residual: CORRECTED_DATA
-        deep-image: =steps.image-2.restored.mfs
+        deep-image: =steps.image-3.restored.mfs
         htc:
           cadence: =recipe.htc_cadence
           size: =recipe.htc_size
           scale: =recipe.htc_scale
           weight: =recipe.htc_weight
-          convolve:
-            arcsec: 8
         nlc: 100
         ncpu: 48
         stokes: [I]
-        enable-hdf5: false
-        enable-fits: true
-        publish-plot-title: ""
+        publish-plot-title: ""  # Has recipe info in its default - override.
       tags: [breifast]
 
 
