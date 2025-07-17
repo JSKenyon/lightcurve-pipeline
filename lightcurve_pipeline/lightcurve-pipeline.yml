@@ -2,6 +2,7 @@
 
 _include:
   - lightcurve-cabs.yml
+  - lightcurve-steps.yml
   - flagging/meerkat_1k_basic.yml
   - masking/masking.yml
   - (breifast.recipes)tron.yml
