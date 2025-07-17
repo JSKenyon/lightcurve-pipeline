@@ -2,6 +2,7 @@
 
 _include:
   - lightcurve-cabs.yml
+  - lightcurve-steps.yml
   - flagging/meerkat_1k_basic.yml
   - masking/masking.yml
   - (breifast.recipes)tron.yml
@@ -119,17 +120,6 @@ lightcurve-pipeline:
       params:
         ms: =recipe.ms-path
 
-    # masking-1:
-    #   info: |
-    #     Use wsclean and breizorro to construct an initial mask for the field.
-    #   recipe: target-masking
-    #   params:
-    #     ms-path: =recipe.ms-path
-    #     data-column: DATA
-    #     image-prefix: target
-    #     outdir-path: '{recipe.outdir-path}/{info.label}'
-    #   skip_if_outputs: exist
-
     image-1:
       info: |
         Image and deconvolve the data using wsclean. This initial round of
@@ -161,8 +151,7 @@ lightcurve-pipeline:
     image-2:
       info: |
         Image and deconvolve the data using wsclean. This second round of
-        imaging uses the mask which was derived by the previous step. The
-        MODEL_DATA column is updated with the resulting visibilities.
+        imaging uses the mask which was derived by the previous step.
       _use: lib.steps.wsclean.masking-base
       params:
         ms: =recipe.ms-path
@@ -193,9 +182,29 @@ lightcurve-pipeline:
     selfcal-1:
       info: |
         Use quartical to perform basic selfcal. Solves for a delay and phase
-        term per scan. Note that the selfcal step may require tuning based
-        on the field and instrument in question.
-      _use: lib.steps.quartical.k
+        term over some time interval. Note that the solution intervals may
+        require tuning based on the field and instrument in question.
+      cab: quartical
+      params:
+        input_ms:
+          path: =recipe.ms-path
+          select_uv_range: [100, 0]
+        input_model:
+          recipe: MODEL_DATA
+        solver:
+          terms: [K]
+          iter_recipe: [100]
+        output:
+          overwrite: true
+          gain_directory: '{recipe.outdir-path}/{info.label}/gains.qc'
+          log_directory: '{recipe.outdir-path}/{info.label}/logs.qc'
+          products: [corrected_data]
+          columns: [CORRECTED_DATA]
+          flags: false
+        K:
+          time_interval: 4
+          freq_interval: 0
+          type: delay_and_offset
 
     flagsummary-2:
       info: |
@@ -206,23 +215,32 @@ lightcurve-pipeline:
 
     image-3:
       info: |
-        Image and deconvolve the selfcal corrected data using wsclean and a
-        fits mask.
-      _use: lib.steps.wsclean.image_column
+        Image and deconvolve the data using wsclean. This third round of
+        imaging uses the mask and the CORRECTED_DATA written by QuartiCal.
+      _use: lib.steps.wsclean.masking-base
       params:
-        column: =steps.selfcal-*.corrected_data_column
-        fits-mask: =steps.mask-*.outfile
-        auto-threshold: 1
+        ms: =recipe.ms-path
+        column: CORRECTED_DATA  # -data-column in wsclean
+        prefix: '{recipe.image-prefix}'
+        temp-dir: '{recipe.outdir-path}/tmp'
+        scale: =recipe.scale
+        weight: =recipe.weight
+        size: =recipe.size
+        abs-threshold: =recipe.abs-threshold
+        fits-mask: '{steps.mask-1.outfile}'
+      skip_if_outputs: fresh
 
     predict-2:
       info: |
         Use wsclean to write the visibilities associated with the model to the
-        MODEL_DATA column.
+        MODEL_DATA column. This is done as a separate step to make it possible
+        to inspect the images before updating the MODEL_DATA column.
       _use: lib.steps.wsclean.predict
       params:
         ms: =recipe.ms-path
-        prefix: =steps.image-2.prefix
-        nchan: =steps.image-2.nchan
+        temp-dir: '{recipe.outdir-path}/tmp'
+        prefix: '{steps.image-3.prefix}'
+        nchan: '{steps.image-3.nchan}'
         size: =recipe.size
         scale: =recipe.scale
 
@@ -233,7 +251,7 @@ lightcurve-pipeline:
       cab: taql.update
       params:
         ms: =recipe.ms-path
-        commands: =LIST("set", "CORRECTED_DATA={steps.image-2.column}-MODEL_DATA")
+        commands: =LIST("set", "CORRECTED_DATA={steps.image-3.column}-MODEL_DATA")
 
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
