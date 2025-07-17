@@ -4,7 +4,6 @@ _include:
   - lightcurve-cabs.yml
   - lightcurve-steps.yml
   - flagging/meerkat_1k_basic.yml
-  - masking/masking.yml
   - (breifast.recipes)tron.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
@@ -125,7 +124,7 @@ lightcurve-pipeline:
         Image and deconvolve the data using wsclean. This initial round of
         deconvolution proceeds up to an absolute threshold and is only used
         for generating a mask.
-      _use: lib.steps.wsclean.masking-base
+      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
@@ -152,7 +151,7 @@ lightcurve-pipeline:
       info: |
         Image and deconvolve the data using wsclean. This second round of
         imaging uses the mask which was derived by the previous step.
-      _use: lib.steps.wsclean.masking-base
+      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
@@ -170,7 +169,7 @@ lightcurve-pipeline:
         Use wsclean to write the visibilities associated with the model to the
         MODEL_DATA column. This is done as a separate step to make it possible
         to inspect the images before updating the MODEL_DATA column.
-      _use: lib.steps.wsclean.predict
+      cab: wsclean
       params:
         ms: =recipe.ms-path
         temp-dir: =recipe.tempdir-path
@@ -178,6 +177,7 @@ lightcurve-pipeline:
         nchan: '{steps.image-2.nchan}'
         size: =recipe.size
         scale: =recipe.scale
+        predict: true
 
     selfcal-1:
       info: |
@@ -217,7 +217,7 @@ lightcurve-pipeline:
       info: |
         Image and deconvolve the data using wsclean. This third round of
         imaging uses the mask and the CORRECTED_DATA written by QuartiCal.
-      _use: lib.steps.wsclean.masking-base
+      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: CORRECTED_DATA  # -data-column in wsclean
@@ -235,7 +235,7 @@ lightcurve-pipeline:
         Use wsclean to write the visibilities associated with the model to the
         MODEL_DATA column. This is done as a separate step to make it possible
         to inspect the images before updating the MODEL_DATA column.
-      _use: lib.steps.wsclean.predict
+      cab: wsclean
       params:
         ms: =recipe.ms-path
         temp-dir: =recipe.tempdir-path
@@ -243,6 +243,7 @@ lightcurve-pipeline:
         nchan: '{steps.image-3.nchan}'
         size: =recipe.size
         scale: =recipe.scale
+        predict: true
 
     subtract-model:
       info: |
