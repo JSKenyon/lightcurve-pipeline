@@ -130,7 +130,7 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
         prefix: '{recipe.image-prefix}'
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         scale: =recipe.scale
         weight: =recipe.weight
         size: =recipe.size
@@ -157,7 +157,7 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
         prefix: '{recipe.image-prefix}'
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         scale: =recipe.scale
         weight: =recipe.weight
         size: =recipe.size
@@ -173,7 +173,7 @@ lightcurve-pipeline:
       _use: lib.steps.wsclean.predict
       params:
         ms: =recipe.ms-path
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         prefix: '{steps.image-2.prefix}'
         nchan: '{steps.image-2.nchan}'
         size: =recipe.size
@@ -222,7 +222,7 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         column: CORRECTED_DATA  # -data-column in wsclean
         prefix: '{recipe.image-prefix}'
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         scale: =recipe.scale
         weight: =recipe.weight
         size: =recipe.size
@@ -238,7 +238,7 @@ lightcurve-pipeline:
       _use: lib.steps.wsclean.predict
       params:
         ms: =recipe.ms-path
-        temp-dir: '{recipe.outdir-path}/tmp'
+        temp-dir: =recipe.tempdir-path
         prefix: '{steps.image-3.prefix}'
         nchan: '{steps.image-3.nchan}'
         size: =recipe.size
