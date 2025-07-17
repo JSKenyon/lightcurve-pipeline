@@ -119,17 +119,6 @@ lightcurve-pipeline:
       params:
         ms: =recipe.ms-path
 
-    # masking-1:
-    #   info: |
-    #     Use wsclean and breizorro to construct an initial mask for the field.
-    #   recipe: target-masking
-    #   params:
-    #     ms-path: =recipe.ms-path
-    #     data-column: DATA
-    #     image-prefix: target
-    #     outdir-path: '{recipe.outdir-path}/{info.label}'
-    #   skip_if_outputs: exist
-
     image-1:
       info: |
         Image and deconvolve the data using wsclean. This initial round of
@@ -193,9 +182,30 @@ lightcurve-pipeline:
     selfcal-1:
       info: |
         Use quartical to perform basic selfcal. Solves for a delay and phase
-        term per scan. Note that the selfcal step may require tuning based
-        on the field and instrument in question.
-      _use: lib.steps.quartical.k
+        term over some time interval. Note that the solution intervals may
+        require tuning based on the field and instrument in question.
+      cab: quartical
+      params:
+        corrected_data_column: SELFCAL{info.suffix}_DATA
+        input_ms:
+          path: =recipe.ms-path
+          select_uv_range: [100, 0]
+        input_model:
+          recipe: MODEL_DATA
+        solver:
+          terms: [K]
+          iter_recipe: [100]
+        output:
+          overwrite: true
+          gain_directory: '{recipe.outdir-path}/{info.label}/gains.qc'
+          log_directory: '{recipe.outdir-path}/{info.label}/logs.qc'
+          products: [corrected_data]
+          columns: [=current.corrected_data_column]
+          flags: false
+        K:
+          time_interval: 4
+          freq_interval: 0
+          type: delay_and_offset
 
     flagsummary-2:
       info: |

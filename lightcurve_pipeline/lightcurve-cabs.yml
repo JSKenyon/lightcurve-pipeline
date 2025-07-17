@@ -127,36 +127,3 @@ lib:
         info: "wsclean step for predicting a model"
         params:
           predict: true
-
-    quartical:
-      quartical:
-      base:
-        cab: quartical
-        params:
-          output:
-            overwrite: true
-            products: [corrected_data]
-            columns: [CORRECTED_DATA]
-      k:
-        _use: lib.steps.quartical.base
-        params:
-          corrected_data_column: SELFCAL{info.suffix}_DATA
-          input_ms:
-            path: =recipe.ms-path
-          input_model:
-            recipe: MODEL_DATA
-          solver:
-            terms: [K]
-            iter_recipe: [50]
-          output:
-            gain_directory: "{recipe.outdir-path}/cal-{info.suffix}"
-            log_directory: "{recipe.outdir-path}/cal-{info.suffix}"
-            products: [corrected_data]
-            columns: [=current.corrected_data_column]
-          mad_flags:
-            enable: =root.mad_flag
-            threshold_bl: 8
-          K:
-            time_interval: 0
-            freq_interval: 0
-            type: delay_and_offset
