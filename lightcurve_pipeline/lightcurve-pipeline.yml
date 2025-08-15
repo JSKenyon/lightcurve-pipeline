@@ -165,22 +165,23 @@ lightcurve-pipeline:
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'
+        no-update-model-required: false
       skip_if_outputs: fresh
 
-    predict-1:
-      info: |
-        Use wsclean to write the visibilities associated with the model to the
-        MODEL_DATA column. This is done as a separate step to make it possible
-        to inspect the images before updating the MODEL_DATA column.
-      cab: wsclean
-      params:
-        ms: =recipe.ms-path
-        temp-dir: =recipe.tempdir-path
-        prefix: '{steps.image-2.prefix}'
-        nchan: '{steps.image-2.nchan}'
-        size: =recipe.size
-        scale: =recipe.scale
-        predict: true
+    # predict-1:
+    #   info: |
+    #     Use wsclean to write the visibilities associated with the model to the
+    #     MODEL_DATA column. This is done as a separate step to make it possible
+    #     to inspect the images before updating the MODEL_DATA column.
+    #   cab: wsclean
+    #   params:
+    #     ms: =recipe.ms-path
+    #     temp-dir: =recipe.tempdir-path
+    #     prefix: '{steps.image-2.prefix}'
+    #     nchan: '{steps.image-2.nchan}'
+    #     size: =recipe.size
+    #     scale: =recipe.scale
+    #     predict: true
 
     selfcal-1:
       info: |
@@ -231,22 +232,23 @@ lightcurve-pipeline:
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
+        no-update-model-required: false
       skip_if_outputs: fresh
 
-    predict-2:
-      info: |
-        Use wsclean to write the visibilities associated with the model to the
-        MODEL_DATA column. This is done as a separate step to make it possible
-        to inspect the images before updating the MODEL_DATA column.
-      cab: wsclean
-      params:
-        ms: =recipe.ms-path
-        temp-dir: =recipe.tempdir-path
-        prefix: '{steps.image-3.prefix}'
-        nchan: '{steps.image-3.nchan}'
-        size: =recipe.size
-        scale: =recipe.scale
-        predict: true
+    # predict-2:
+    #   info: |
+    #     Use wsclean to write the visibilities associated with the model to the
+    #     MODEL_DATA column. This is done as a separate step to make it possible
+    #     to inspect the images before updating the MODEL_DATA column.
+    #   cab: wsclean
+    #   params:
+    #     ms: =recipe.ms-path
+    #     temp-dir: =recipe.tempdir-path
+    #     prefix: '{steps.image-3.prefix}'
+    #     nchan: '{steps.image-3.nchan}'
+    #     size: =recipe.size
+    #     scale: =recipe.scale
+    #     predict: true
 
     subtract-model:  # Replace with a second selfcal step?
       info: |
