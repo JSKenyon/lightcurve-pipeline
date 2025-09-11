@@ -15,3 +15,16 @@ cabs:
       args:
         dtype: List[Any]
 
+  add-imaging-columns:
+    flavour: python-code
+    command: |
+      import casacore.tables as pt
+      pt.addImagingColumns(ms_path)
+    inputs:
+      ms-path:
+        info: Path to the measurement set.
+        dtype: MS
+        policies:
+          positional: true
+        must_exist: true
+        writable: true

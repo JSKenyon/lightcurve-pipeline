@@ -122,6 +122,15 @@ lightcurve-pipeline:
       params:
         ms: =recipe.ms-path
 
+    add-columns-1:
+      info: |
+        Use python-casacore to add all the imaging columns to the measurement
+        set - this ensures that they are added with a TiledStorageManager and
+        initialised to zero.
+      cab: add-imaging-columns
+      params:
+        ms-path: =recipe.ms-path
+
     image-1:
       info: |
         Image and deconvolve the data using wsclean. This initial round of
