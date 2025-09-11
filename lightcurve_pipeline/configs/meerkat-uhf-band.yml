@@ -6,7 +6,7 @@ size: 10240
 abs-threshold: 1e-6
 
 # High time resolution imaging parameters.
-htc_size: 3414
+htc_size: 3410
 htc_scale: 5.1asec
 htc_cadence: 1
 htc_weight: briggs 0
