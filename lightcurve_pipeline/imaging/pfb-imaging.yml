@@ -1,0 +1,204 @@
+# _include:
+#   (cultcargo)pfb-imaging.yml
+
+_include:
+  (pfb)stimela_cabs.yml
+
+opts:
+  backend:
+    select: native
+
+
+pfb-imaging-recipe:
+  info: SGRA imaging recipe
+
+  # make them all the same size
+  assign:
+    cell-size: 1.1
+    nx: 10240
+    ny: 10240
+
+  inputs:
+    ms:
+      info: measurement set
+      dtype: MS
+
+    basedir:
+      info:
+        Base directory in which to place output data products.
+    imagename:
+      info:
+        Image will be named
+    data-column:
+      default: DATA #CORRECTED_DATA
+      info:
+        Which column to image.
+        Also allows simple arithmetic e.g. CORRECTED_DATA-MODEL_DATA
+    model-column:
+      default: MODEL_DATA
+      info:
+        Column to write model visibilities to
+    channels-per-image:
+      default: 128  # results in 8 bands
+      info:
+        Number of channels per image.
+        Determines number of output bands.
+    integrations-per-image:
+      default: -1
+      info:
+        Number of integrations per image.
+    product:
+      dtype: str
+      default: I
+      info:
+        String specifying the desired stokes outputs.
+    robustness:
+      dtype: float
+      default: -0.3
+      info:
+        Briggs robustness level.
+        Less than -2 corresponds to uniform, larger than 2 to natural.
+    field-of-view:
+      dtype: float
+      default: 4.5
+    super-resolution-factor:
+      dtype: float
+      default: 2.5
+      info:
+        How much to oversample Nyquist by at the highest frequency
+    cell-size:
+      dtype: float
+      info:
+        Cell size in arcseconds.
+        Preferred over fov and srf if set.
+    nx:
+      dtype: int
+      info:
+        Number of pixels in x direction.
+    ny:
+      dtype: int
+      info:
+        Number of pixels in y direction.
+    chan-average:
+      dtype: int
+      default: 1
+      info:
+        How many channels to average together
+    bda-decorr:
+      dtype: float
+      default: 0.98
+      info:
+        Amount of amplitude loss that can be tolerated at edge of field
+    niter:
+      dtype: int
+      default: 15
+      info:
+        Number of major cycles
+    l2-reweight-dof:
+      dtype: int
+    rmsfactor:
+      dtype: float
+      default: 0.75  # 3 -> just after cal transfer, 0.5 -> minimum before getting crap in the model
+      info:
+        Multiple of the rms to threshold by
+    overwrite:
+      default: true
+      aliases: ['*.overwrite']
+    tmf:
+      dtype: str
+      info:
+        Transfer model from this component model
+    output-filename:
+      default: '{recipe.basedir}/{recipe.imagename}'
+      aliases: ['*.output-filename']
+    fits-output-folder:
+      default: '{recipe.basedir}/fits'
+      aliases: ['*.fits-output-folder']
+    log-directory:
+      default: '{recipe.basedir}/logs'
+      aliases: ['*.log-directory']
+
+  steps:
+    init:
+      cab: pfb.init
+      info: 'Initialise imaging data products'
+      params:
+        ms: =recipe.ms
+        nthreads: 1
+        nworkers: 32
+        data-column: =recipe.data-column
+        sigma-column: SIGMA_SPECTRUM
+        channels-per-image: =recipe.channels-per-image
+        integrations-per-image: =recipe.integrations-per-image
+        chan-average: =recipe.chan-average
+        max-field-of-view: =recipe.field-of-view
+        bda-decorr: =recipe.bda-decorr
+        overwrite: =recipe.overwrite
+
+    grid:
+      cab: pfb.grid
+      info: 'Setup grid for imaging'
+      params:
+        super-resolution-factor: =IFSET(recipe.super-resolution-factor)
+        field-of-view: =IFSET(recipe.field-of-view)
+        cell-size: =IFSET(recipe.cell-size)
+        nx: =IFSET(recipe.nx)
+        ny: =IFSET(recipe.ny)
+        robustness: =recipe.robustness
+        nthreads: 6
+        nworkers: 6
+        psf-oversize: 1.6
+        transfer-model-from: =IFSET(recipe.tmf)
+        overwrite: =recipe.overwrite
+        l2-reweight-dof: =IFSET(recipe.l2-reweight-dof)
+
+    # kclean:
+    #   cab: pfb.kclean
+    #   info: Cleaning step
+    #   params:
+    #     niter: =recipe.niter
+    #     gamma: 0.99
+    #     nthreads: 32
+    #     rmsfactor: =recipe.rmsfactor
+    #     product: =recipe.product
+
+    sara:
+      cab: pfb.sara
+      info: Deconvolution step
+      params:
+        niter: =recipe.niter
+        bases: 'self,db1' #,db2,db3'
+        nlevels: 2
+        l1-reweight-from: 7 #=recipe.l1-reweight-from
+        pd-tol: [1.5e-4]
+        pd-maxit: 450
+        pd-verbose: 2
+        pd-report-freq: 50
+        tol: 5e-4
+        gamma: 0.99
+        rmsfactor: 3 #=recipe.rmsfactor
+        alpha: 2 #=recipe.alpha
+        eta: 5e-4
+        positivity: =IF( recipe.product == 'I', 1, 0)
+        nthreads: 32 #=recipe.nworkers * recipe.nthreads
+        init-factor: =IFSET(recipe.transfer-model-from, 1.0, 0.5)
+        # product: =recipe.product
+
+
+    restore:
+      cab: pfb.restore
+      info: Produce restored image.
+      params:
+        nworkers: 4
+        nthreads: 6
+        outputs: iI
+
+    degrid:
+      cab: pfb.degrid
+      info: Render model to visibilities
+      params:
+        ms: =recipe.ms
+        model-column: =recipe.model-column
+        nworkers: 2
+        nthreads: 16
+        freq-range: =IFSET(recipe.freq-range)
