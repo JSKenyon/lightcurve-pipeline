@@ -3,17 +3,10 @@ _include:
     - wsclean.yml
     - breizorro.yml
     - quartical.yml
-    - cubical.yml
     - taql.yml
 
 cabs:
-  quartical:
-    outputs:
-      corrected_data_column:
-        dtype: str
-        required: false
-
-  testing:
+  debug-print:
     flavour: python-code
     command: |
       for arg in args:
@@ -22,107 +15,16 @@ cabs:
       args:
         dtype: List[Any]
 
-lib:
-  steps:
-    wsclean:
-      base:
-        info: "base wsclean settings"
-        cab: wsclean
-        params:
-          padding: 1.3
-          wstack-nwlayers-factor: 3
-          use-wgridder: true
-          log-time: true
-          ms: '{recipe.ms-path}'
-          prefix: '{recipe.image-prefix}'
-          size: '{recipe.wsclean_size}'
-          scale: '{recipe.pixel_scale}asec'
-          nchan: '{recipe.wsclean_nchan}'
-          temp-dir: '{recipe.tempdir-path}'
-          column: SELFCAL{info.suffix}_DATA
-          threads: 16
-
-      dirty:
-        _use: lib.steps.wsclean.base
-        info: "wsclean step for dirty-only image"
-        params:
-          column: CORRECTED_DATA
-          niter: 0
-
-      image:
-        _use: lib.steps.wsclean.dirty
-        info: "wsclean step for imaging"
-        params:
-          niter: 1000000
-          mgain: 0.9
-          nmiter: 10
-          auto-threshold: =recipe.wsclean_auto_thresh
-          baseline-averaging: 12
-          no-update-model-required: true
-          auto-mask: =IFSET(current.fits-mask, UNSET, recipe.wsclean_auto_mask)
-          fit-beam: true
-          elliptical-beam: true
-          join-channels: true
-
-      image_pol:
-        _use: lib.steps.wsclean.image
-        info: "wsclean step for IQUV imaging"
-        params:
-          join-polarizations: true
-          fit-spectral-pol: =UNSET
-          pol: IQUV
-          mgain: 0.9
-
-      image_column:
-        _use:
-          - lib.steps.wsclean.image
-        params:
-          fit-spectral-pol: 4
-          join-channels: true
-          save-source-list: true
-          column: SELFCAL{info.suffix}_DATA
-
-      image_column_pol:
-        _use:
-          - lib.steps.wsclean.image_pol
-        params:
-          column: SELFCAL{info.suffix}_DATA
-
-      predict:
-        _use: lib.steps.wsclean.base
-        info: "wsclean step for predicting a model"
-        params:
-          predict: true
-
-    quartical:
-      quartical:
-      base:
-        cab: quartical
-        params:
-          output:
-            overwrite: true
-            products: [corrected_data]
-            columns: [CORRECTED_DATA]
-      k:
-        _use: lib.steps.quartical.base
-        params:
-          corrected_data_column: SELFCAL{info.suffix}_DATA
-          input_ms:
-            path: =recipe.ms-path
-          input_model:
-            recipe: MODEL_DATA
-          solver:
-            terms: [K]
-            iter_recipe: [50]
-          output:
-            gain_directory: "{recipe.outdir-path}/cal-{info.suffix}"
-            log_directory: "{recipe.outdir-path}/cal-{info.suffix}"
-            products: [corrected_data]
-            columns: [=current.corrected_data_column]
-          mad_flags:
-            enable: =root.mad_flag
-            threshold_bl: 8
-          K:
-            time_interval: 0
-            freq_interval: 0
-            type: delay_and_offset
+  add-imaging-columns:
+    flavour: python-code
+    command: |
+      import casacore.tables as pt
+      pt.addImagingColumns(ms_path)
+    inputs:
+      ms-path:
+        info: Path to the measurement set.
+        dtype: MS
+        policies:
+          positional: true
+        must_exist: true
+        writable: true
