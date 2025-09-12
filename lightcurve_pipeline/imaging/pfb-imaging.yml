@@ -170,7 +170,7 @@ pfb-imaging-recipe:
         bases: 'self,db1' #,db2,db3'
         nlevels: 2
         l1-reweight-from: 7 #=recipe.l1-reweight-from
-        pd-tol: [1.5e-4]
+        pd-tol: [2e-4]  # pd-tol should be be less than tol for convergence.
         pd-maxit: 450
         pd-verbose: 2
         pd-report-freq: 50
