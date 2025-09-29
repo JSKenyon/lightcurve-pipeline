@@ -82,17 +82,31 @@ lightcurve-pipeline:
       dtype: str
       default: natural
 
-    # TODO: Make use of these values.
     threads:
+      info: |
+        Number of threads to use in general. The more specific threading options
+        defined below take priority over this value.
       dtype: int
       default: 1
     imaging-threads:
+      info: |
+        Number of threads to use for imaging steps. Applies to wsclean and
+        sets both the parallel-reordering and threads values.
       dtype: Optional[int]
       default:  # The default will evaluate to None, making logic simpler.
     calibration-threads:
+      info: |
+        Number of threads to use for calibration steps. Applies to QuartiCal
+        and sets the number of Dask threads.
       dtype: Optional[int]
+      default:  # The default will evaluate to None, making logic simpler.
     breifast-threads:
+      info: |
+        Number of threads to use for breifast (transient imaging and lightcurve
+        extraction). While this is exposed as an input to breifast, it isn't
+        honoured everywhere internally. This may change with future releases.
       dtype: Optional[int]
+      default:  # The default will evaluate to None, making logic simpler.
 
   outputs:
     outdir-path:
@@ -106,14 +120,6 @@ lightcurve-pipeline:
         mkdir_parent: true
 
   steps:
-    # TODO: Remove after testing.
-    test-1:
-      cab: debug-print
-      params:
-        args:
-          - =recipe.threads
-          - =recipe.imaging-threads or recipe.threads
-
     basic-flagging:
       info: |
         Run a basic flagging subrecipe, based on Oxkat, which will flag known
@@ -166,6 +172,8 @@ lightcurve-pipeline:
         weight: =recipe.weight
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
+        threads: =recipe.imaging-threads or recipe.threads
+        parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
     mask-1:
@@ -195,6 +203,8 @@ lightcurve-pipeline:
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'
         no-update-model-required: false
+        threads: =recipe.imaging-threads or recipe.threads
+        parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
     # predict-1:
@@ -222,11 +232,15 @@ lightcurve-pipeline:
         input_ms:
           path: =recipe.ms-path
           select_uv_range: [100, 0]
+          # Ideally matches/is an integer multiple of K.time_interval.
+          time_chunk: 4
         input_model:
           recipe: MODEL_DATA
         solver:
           terms: [K]
           iter_recipe: [100]
+        dask:
+          threads: =recipe.calibration-threads or recipe.threads
         output:
           overwrite: true
           gain_directory: '{recipe.outdir-path}/{info.label}/gains.qc'
@@ -262,6 +276,8 @@ lightcurve-pipeline:
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
         no-update-model-required: false
+        threads: =recipe.imaging-threads or recipe.threads
+        parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
     # predict-2:
@@ -305,7 +321,7 @@ lightcurve-pipeline:
           scale: =recipe.htc_scale
           weight: =recipe.htc_weight
         nlc: 100
-        ncpu: 48
+        ncpu: =recipe.breifast-threads or recipe.threads
         stokes: [I]
         publish-plot-title: ""  # Has recipe info in its default - override.
       tags: [breifast]
