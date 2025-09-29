@@ -82,6 +82,18 @@ lightcurve-pipeline:
       dtype: str
       default: natural
 
+    # TODO: Make use of these values.
+    threads:
+      dtype: int
+      default: 1
+    imaging-threads:
+      dtype: Optional[int]
+      default:  # The default will evaluate to None, making logic simpler.
+    calibration-threads:
+      dtype: Optional[int]
+    breifast-threads:
+      dtype: Optional[int]
+
   outputs:
     outdir-path:
       info: |
@@ -94,6 +106,14 @@ lightcurve-pipeline:
         mkdir_parent: true
 
   steps:
+    # TODO: Remove after testing.
+    test-1:
+      cab: debug-print
+      params:
+        args:
+          - =recipe.threads
+          - =recipe.imaging-threads or recipe.threads
+
     basic-flagging:
       info: |
         Run a basic flagging subrecipe, based on Oxkat, which will flag known
