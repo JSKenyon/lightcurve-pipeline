@@ -337,5 +337,5 @@ tron-wrapper:
       required: true
     primary-beam-band:
       info: Determines the band which is used when downloading/computing the primary beam.
-      dype: str
+      dtype: str
       required: true
