@@ -252,7 +252,7 @@ lightcurve-pipeline:
           time_interval: 4
           freq_interval: 0
           type: delay_and_offset
-      skip_if_outputs: fresh
+      # skip_if_outputs: fresh  # This doesn't work at present as QC doesn't have true outputs.
 
     flagsummary-2:
       info: |
