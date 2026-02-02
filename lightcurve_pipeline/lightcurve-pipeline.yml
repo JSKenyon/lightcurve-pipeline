@@ -252,7 +252,7 @@ lightcurve-pipeline:
           time_interval: 4
           freq_interval: 0
           type: delay_and_offset
-      skip_if_outputs: fresh
+      # skip_if_outputs: fresh  # This doesn't work at present as QC doesn't have true outputs.
 
     flagsummary-2:
       info: |
@@ -307,7 +307,7 @@ lightcurve-pipeline:
 
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
-      recipe: tron-wrapper
+      recipe: tron
       params:
         obs: dummy  # Required, but unused.
         ms: =recipe.ms-path
@@ -326,12 +326,3 @@ lightcurve-pipeline:
         stokes: [I]
         publish-plot-title: ""  # Has recipe info in its default - override.
       tags: [breifast]
-
-
-tron-wrapper:
-  _use: tron
-  inputs:
-    ms:
-      info: measurement set
-      dtype: MS
-      required: true
