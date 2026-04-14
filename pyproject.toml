@@ -29,7 +29,7 @@ repository = "https://github.com/JSKenyon/lightcurve-pipeline"
 [tool.uv.sources]
 stimela = { git = "ssh://git@github.com/caracal-pipeline/stimela.git", branch = "master" }
 cult-cargo = { git = "ssh://git@github.com/caracal-pipeline/cult-cargo.git", branch = "master" }
-breifast-tron = { git = "ssh://git@github.com/ratt-ru/breifast.git", branch = "directpfb", subdirectory = "breifast-tron" }
+breifast-tron = { git = "ssh://git@github.com/ratt-ru/breifast.git", branch = "tweak-output-xarray-lightcurves-overhaul", subdirectory = "breifast-tron" }
 
 [build-system]
 requires = ["hatchling"]
