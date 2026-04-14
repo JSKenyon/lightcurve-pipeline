@@ -309,11 +309,10 @@ lightcurve-pipeline:
       info: Run the tron pipeline for image plane transient detection.
       recipe: tron
       params:
-        obs: dummy  # Required, but unused.
+        obs: =STRIPEXT(BASENAME(recipe.ms-path))
         ms: =recipe.ms-path
         dir-out: '{recipe.outdir-path}/breifast'
         dir-tmp: =recipe.tempdir-path
-        dir-cubes: '{current.dir-out}/cubes'
         column.residual: CORRECTED_DATA
         deep-image: =steps.image-3.restored.mfs
         htc:
