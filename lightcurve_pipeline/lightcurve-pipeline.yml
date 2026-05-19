@@ -63,6 +63,17 @@ lightcurve-pipeline:
       info: Absulute pixel flux threshold for deconvolving the deep images.
       dtype: float
       default: 1e-3
+    multiscale:
+      info: |
+        Enable wsclean multiscale deconvolution in the deep imaging steps.
+      dtype: bool
+      default: true
+    multiscale-scales:
+      info: |
+        Scales (in pixels) to use for wsclean multiscale deconvolution in the
+        deep imaging steps. Only used when multiscale is enabled.
+      dtype: List[int]
+      default: [0, 3, 9]
     htc_cadence:
       info: |
         The number in integrations per image in the high time resolution
@@ -172,6 +183,8 @@ lightcurve-pipeline:
         weight: =recipe.weight
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
+        multiscale: =recipe.multiscale
+        multiscale-scales: =recipe.multiscale-scales
         threads: =recipe.imaging-threads or recipe.threads
         parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
@@ -203,6 +216,8 @@ lightcurve-pipeline:
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'
         no-update-model-required: false
+        multiscale: =recipe.multiscale
+        multiscale-scales: =recipe.multiscale-scales
         threads: =recipe.imaging-threads or recipe.threads
         parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
@@ -277,6 +292,8 @@ lightcurve-pipeline:
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
         no-update-model-required: false
+        multiscale: =recipe.multiscale
+        multiscale-scales: =recipe.multiscale-scales
         threads: =recipe.imaging-threads or recipe.threads
         parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
