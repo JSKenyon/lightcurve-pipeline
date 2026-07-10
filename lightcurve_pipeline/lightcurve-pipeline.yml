@@ -331,7 +331,7 @@ lightcurve-pipeline:
         dir-out: '{recipe.outdir-path}/breifast'
         dir-tmp: =recipe.tempdir-path
         column.data: CORRECTED_DATA
-        column.model: null
+        column.model: =UNSET
         deep-image: =steps.image-3.restored.mfs
         htc:
           cadence: =recipe.htc_cadence
@@ -339,6 +339,6 @@ lightcurve-pipeline:
           scale: =recipe.htc_scale
           weight: =recipe.htc_weight
         ncpu: =recipe.breifast-threads or recipe.threads
-        stokes: [I]
+        stokes: "I"
         publish-plot-title: ""  # Has recipe info in its default - override.
       tags: [breifast]
