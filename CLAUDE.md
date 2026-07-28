@@ -32,17 +32,21 @@ stimela -C run lightcurve-pipeline.yml lightcurve-pipeline ms-path=path/to/ms ou
 - Add `-s <step>` to run a single step, or `--skip-existing`-style behaviour is
   already baked in via each step's `skip_if_outputs` field.
 
-Installation (Python 3.10 only — pinned `>=3.10, <3.11`):
+Installation (Python 3.10–3.12 — pinned `>=3.10, <3.13`). `uv` is required, not
+optional: bare `pip` ignores `[tool.uv.sources]` and the install will fail.
 
 ```
-pip install -e .   # or: uv pip install -e .
+uv venv   # Honours requires-python when selecting an interpreter.
+source .venv/bin/activate
+uv pip install -e .
 ```
 
 Several dependencies (`stimela`, `cult-cargo`, `breifast-tron`) resolve from
-**private git repos over SSH** (see `[tool.uv.sources]` in `pyproject.toml`).
-`breifast-tron` is not public — SSH access to `ratt-ru/breifast` is required and
-its revision is pinned. There is no `.venv` in the repo; create one before
-installing.
+**git repos over SSH** (see `[tool.uv.sources]` in `pyproject.toml`), each
+tracking its `master` branch rather than a pinned revision. `breifast-tron` is
+not public — SSH access to `ratt-ru/breifast` is required, and it is not on PyPI
+at all, so a `pip install` cannot fall back to a release. There is no `.venv` in
+the repo; create one before installing.
 
 There are no tests, linters, or build steps configured beyond the hatchling
 package build.

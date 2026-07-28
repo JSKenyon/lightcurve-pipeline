@@ -37,7 +37,11 @@ to be extracted i.e. does not handle field selection.
 
 ## Requirements
 
-- Python 3.10 (the project is pinned to `>=3.10, <3.11`).
+- Python 3.10, 3.11 or 3.12 (the project is pinned to `>=3.10, <3.13`).
+- [uv](https://docs.astral.sh/uv) — used to create the virtual environment and
+  install the dependencies. It is required rather than optional, as several
+  dependencies are resolved from git via `[tool.uv.sources]`, which plain `pip`
+  does not understand.
 - [Singularity](https://docs.sylabs.io) — the recipe runs cabs through the
   Singularity backend.
 - SSH access to the `ratt-ru/breifast` repository. The pipeline depends on
@@ -48,17 +52,16 @@ to be extracted i.e. does not handle field selection.
 ## Installation
 
 Installation of the required dependencies can be accomplished by running the
-following (preferably in a virtual environment):
+following:
 
 ```bash
 git clone git@github.com:JSKenyon/lightcurve-pipeline.git
 cd lightcurve-pipeline
 
-python3.10 -m venv .venv
+uv venv   # Creates .venv using a Python permitted by requires-python.
 source .venv/bin/activate
 
-pip install --upgrade pip   # Ensure you have updated pip first.
-pip install -e .
+uv pip install -e .
 ```
 
 ## Configuration
