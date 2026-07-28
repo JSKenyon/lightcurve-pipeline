@@ -10,3 +10,6 @@ htc_size: 3410
 htc_scale: 3.3asec
 htc_cadence: 1
 htc_weight: briggs 0
+
+# Extra input to the tron step.
+transient-imaging.primary-beam-band: L

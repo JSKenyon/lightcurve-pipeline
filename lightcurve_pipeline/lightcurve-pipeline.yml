@@ -63,6 +63,17 @@ lightcurve-pipeline:
       info: Absulute pixel flux threshold for deconvolving the deep images.
       dtype: float
       default: 1e-3
+    multiscale:
+      info: |
+        Enable wsclean multiscale deconvolution in the deep imaging steps.
+      dtype: bool
+      default: true
+    multiscale-scales:
+      info: |
+        Scales (in pixels) to use for wsclean multiscale deconvolution in the
+        deep imaging steps. Only used when multiscale is enabled.
+      dtype: List[int]
+      default: [0, 3, 9]
     htc_cadence:
       info: |
         The number in integrations per image in the high time resolution
@@ -81,6 +92,32 @@ lightcurve-pipeline:
       info: Image weighting mode for the high time resolution images.
       dtype: str
       default: natural
+
+    threads:
+      info: |
+        Number of threads to use in general. The more specific threading options
+        defined below take priority over this value.
+      dtype: int
+      default: 1
+    imaging-threads:
+      info: |
+        Number of threads to use for imaging steps. Applies to wsclean and
+        sets both the parallel-reordering and threads values.
+      dtype: Optional[int]
+      default:  # The default will evaluate to None, making logic simpler.
+    calibration-threads:
+      info: |
+        Number of threads to use for calibration steps. Applies to QuartiCal
+        and sets the number of Dask threads.
+      dtype: Optional[int]
+      default:  # The default will evaluate to None, making logic simpler.
+    breifast-threads:
+      info: |
+        Number of threads to use for breifast (transient imaging and lightcurve
+        extraction). While this is exposed as an input to breifast, it isn't
+        honoured everywhere internally. This may change with future releases.
+      dtype: Optional[int]
+      default:  # The default will evaluate to None, making logic simpler.
 
   outputs:
     outdir-path:
@@ -146,6 +183,10 @@ lightcurve-pipeline:
         weight: =recipe.weight
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
+        multiscale: =recipe.multiscale
+        multiscale-scales: =recipe.multiscale-scales
+        threads: =recipe.imaging-threads or recipe.threads
+        parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
     mask-1:
@@ -175,6 +216,10 @@ lightcurve-pipeline:
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'
         no-update-model-required: false
+        multiscale: =recipe.multiscale
+        multiscale-scales: =recipe.multiscale-scales
+        threads: =recipe.imaging-threads or recipe.threads
+        parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
     # predict-1:
@@ -202,11 +247,15 @@ lightcurve-pipeline:
         input_ms:
           path: =recipe.ms-path
           select_uv_range: [100, 0]
+          # Ideally matches/is an integer multiple of K.time_interval.
+          time_chunk: 4
         input_model:
           recipe: MODEL_DATA
         solver:
           terms: [K]
           iter_recipe: [100]
+        dask:
+          threads: =recipe.calibration-threads or recipe.threads
         output:
           overwrite: true
           gain_directory: '{recipe.outdir-path}/{info.label}/gains.qc'
@@ -218,6 +267,7 @@ lightcurve-pipeline:
           time_interval: 4
           freq_interval: 0
           type: delay_and_offset
+      # skip_if_outputs: fresh  # This doesn't work at present as QC doesn't have true outputs.
 
     flagsummary-2:
       info: |
@@ -242,6 +292,10 @@ lightcurve-pipeline:
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
         no-update-model-required: false
+        multiscale: =recipe.multiscale
+        multiscale-scales: =recipe.multiscale-scales
+        threads: =recipe.imaging-threads or recipe.threads
+        parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
     # predict-2:
@@ -270,42 +324,21 @@ lightcurve-pipeline:
 
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
-      recipe: tron-wrapper
+      recipe: tron
       params:
-        obs: dummy  # Required, but unused.
+        obs: =STRIPEXT(BASENAME(recipe.ms-path))
         ms: =recipe.ms-path
         dir-out: '{recipe.outdir-path}/breifast'
-        dirs.temp: =recipe.tempdir-path
-        dirs.cubes: '{current.dir-out}/cubes'
-        column.residual: CORRECTED_DATA
+        dir-tmp: =recipe.tempdir-path
+        column.data: CORRECTED_DATA
+        column.model: =UNSET
         deep-image: =steps.image-3.restored.mfs
         htc:
           cadence: =recipe.htc_cadence
           size: =recipe.htc_size
           scale: =recipe.htc_scale
           weight: =recipe.htc_weight
-        nlc: 100
-        ncpu: 48
-        stokes: [I]
+        ncpu: =recipe.breifast-threads or recipe.threads
+        stokes: "I"
         publish-plot-title: ""  # Has recipe info in its default - override.
       tags: [breifast]
-
-
-tron-wrapper:
-  _use: tron-base
-  inputs:
-    ms:
-      info: measurement set
-      dtype: MS
-      required: true
-  outputs:
-    dirs:
-      temp:
-        dtype: Directory
-        required: true
-        skip_freshness_checks: true
-        mkdir: true
-      cubes:
-        dtype: Directory
-        required: true
-        mkdir: true
