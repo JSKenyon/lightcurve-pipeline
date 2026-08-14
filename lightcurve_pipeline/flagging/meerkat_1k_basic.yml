@@ -22,7 +22,7 @@ meerkat-target-flagging:
           *:1010~1150MHz
 
         CAL_1GC_BL_FLAG_UVRANGE: '<600'
-        CAL_1GC_BL_FREQS: ''
+        CAL_1GC_BL_FREQS: null
 
       L:
         CAL_1GC_FREQRANGE: '*:1300~1400MHz'
@@ -155,6 +155,7 @@ meerkat-target-flagging:
         spw: =recipe.CAL_1GC_BL_FREQS
         mode: 'manual'
         uvrange: =recipe.CAL_1GC_BL_FLAG_UVRANGE
+      skip: =not ifset(recipe.CAL_1GC_BL_FREQS)
 
     flag-autocorrelations:
       info: Flag all autocorrelations.
