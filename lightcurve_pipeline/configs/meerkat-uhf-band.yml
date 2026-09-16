@@ -5,11 +5,21 @@ weight: briggs -0.5
 size: 10240
 abs-threshold: 1e-6
 
-# High time resolution imaging parameters.
-htc_size: 3410
-htc_scale: 5.1asec
-htc_cadence: 1
-htc_weight: briggs 0
-
-# Extra input to the tron step.
-transient-imaging.primary-beam-band: U
+# Extra input to the tron-pfb step.
+transient-imaging.column.weight: WEIGHT_SPECTRUM
+transient-imaging.htc.field-of-view: 4
+transient-imaging.htc.super-resolution-factor: 1.1
+transient-imaging.htc.robustness: -0.5
+transient-imaging.htc.images-per-chunk: 16
+transient-imaging.htc.max-simul-chunks: 5
+transient-imaging.search-radius: 2
+transient-imaging.breifast.reject-flux-threshold: "0.1"
+transient-imaging.breifast.reject-mean-threshold: "0.1"
+transient-imaging.primary-beam-band: "U"
+transient-imaging.flag-cube.flag-excess-rms: 1.5
+transient-imaging.breifast.candidate-threshold: 7
+transient-imaging.breifast.detection-threshold: 8
+transient-imaging.breifast.repeater-threshold: 7
+transient-imaging.timescales: [0, FD, 15, 30, 60, 120, 240, 480, 960]
+transient-imaging.enable-pimenton-cutouts: true
+transient-imaging.include-all-regions: true

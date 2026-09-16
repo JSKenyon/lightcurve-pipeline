@@ -4,6 +4,7 @@ _include:
     - breizorro.yml
     - quartical.yml
     - taql.yml
+    - smops
 
 cabs:
   debug-print:
