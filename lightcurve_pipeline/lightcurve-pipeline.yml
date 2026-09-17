@@ -4,7 +4,7 @@ _include:
   - lightcurve-cabs.yml
   - lightcurve-steps.yml
   - flagging/meerkat_1k_basic.yml
-  - (breifast.recipes)tron.yml
+  - (breifast.recipes)tron-pfb.yml
 
 ## this augments the standard 'opts' config section to tweak logging settings
 opts:
@@ -74,24 +74,11 @@ lightcurve-pipeline:
         deep imaging steps. Only used when multiscale is enabled.
       dtype: List[int]
       default: [0, 3, 9]
-    htc_cadence:
-      info: |
-        The number in integrations per image in the high time resolution
-        imaging step.
+
+    smops-nchan:
+      info: Number of output channels for smops upsampling of the wsclean model.
       dtype: int
-      default: 1
-    htc_size:
-      info: Image size for the high time resolution images.
-      dtype: int
-      default: 682
-    htc_scale:
-      info: Pixel scale for the high time resolution images.
-      dtype: str
-      default: 9asec
-    htc_weight:
-      info: Image weighting mode for the high time resolution images.
-      dtype: str
-      default: natural
+      default: 64
 
     threads:
       info: |
@@ -169,11 +156,11 @@ lightcurve-pipeline:
         ms-path: =recipe.ms-path
 
     image-1:
+      _use: lib.steps.wsclean.base
       info: |
         Image and deconvolve the data using wsclean. This initial round of
         deconvolution proceeds up to an absolute threshold and is only used
         for generating a mask.
-      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
@@ -201,10 +188,10 @@ lightcurve-pipeline:
       skip_if_outputs: fresh
 
     image-2:
+      _use: lib.steps.wsclean.base
       info: |
         Image and deconvolve the data using wsclean. This second round of
         imaging uses the mask which was derived by the previous step.
-      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: DATA  # -data-column in wsclean
@@ -215,27 +202,42 @@ lightcurve-pipeline:
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'
-        no-update-model-required: false
+        no-update-model-required: true
         multiscale: =recipe.multiscale
         multiscale-scales: =recipe.multiscale-scales
         threads: =recipe.imaging-threads or recipe.threads
         parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
-    # predict-1:
-    #   info: |
-    #     Use wsclean to write the visibilities associated with the model to the
-    #     MODEL_DATA column. This is done as a separate step to make it possible
-    #     to inspect the images before updating the MODEL_DATA column.
-    #   cab: wsclean
-    #   params:
-    #     ms: =recipe.ms-path
-    #     temp-dir: =recipe.tempdir-path
-    #     prefix: '{steps.image-2.prefix}'
-    #     nchan: '{steps.image-2.nchan}'
-    #     size: =recipe.size
-    #     scale: =recipe.scale
-    #     predict: true
+    smops-1:
+      info: |
+        Upsamples the wsclean model output to a higher frequency resolution, which suppresses
+        subband related artifacts in the residual visibilities.
+      cab: smops
+      skip_if_outputs: fresh
+      params:
+        ms: =recipe.ms-path
+        input-prefix: =steps.image-2.prefix
+        output-prefix: "{steps.image-2.prefix}-upsampled"
+        num-threads: =recipe.imaging-threads or recipe.threads
+        polynomial-order: 4
+        stokes: "I"
+        channels-out: =recipe.smops-nchan
+
+    predict-1:
+      info: |
+        Use wsclean to write the visibilities associated with the model to the
+        MODEL_DATA column. This is done as a separate step to make it possible
+        to inspect the images before updating the MODEL_DATA column.
+      cab: wsclean
+      params:
+        ms: =recipe.ms-path
+        temp-dir: =recipe.tempdir-path
+        prefix: '{steps.smops-1.output-prefix}'
+        nchan: '{steps.smops-1.channels-out}'
+        size: =recipe.size
+        scale: =recipe.scale
+        predict: true
 
     selfcal-1:
       info: |
@@ -277,10 +279,10 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
 
     image-3:
+      _use: lib.steps.wsclean.base
       info: |
         Image and deconvolve the data using wsclean. This third round of
         imaging uses the mask and the CORRECTED_DATA written by QuartiCal.
-      _use: lib.steps.wsclean.base
       params:
         ms: =recipe.ms-path
         column: CORRECTED_DATA  # -data-column in wsclean
@@ -291,36 +293,42 @@ lightcurve-pipeline:
         size: =recipe.size
         abs-threshold: =recipe.abs-threshold
         fits-mask: '{steps.mask-1.outfile}'  # Should we make a new mask?
-        no-update-model-required: false
+        no-update-model-required: true
         multiscale: =recipe.multiscale
         multiscale-scales: =recipe.multiscale-scales
         threads: =recipe.imaging-threads or recipe.threads
         parallel-reordering: =recipe.imaging-threads or recipe.threads
       skip_if_outputs: fresh
 
-    # predict-2:
-    #   info: |
-    #     Use wsclean to write the visibilities associated with the model to the
-    #     MODEL_DATA column. This is done as a separate step to make it possible
-    #     to inspect the images before updating the MODEL_DATA column.
-    #   cab: wsclean
-    #   params:
-    #     ms: =recipe.ms-path
-    #     temp-dir: =recipe.tempdir-path
-    #     prefix: '{steps.image-3.prefix}'
-    #     nchan: '{steps.image-3.nchan}'
-    #     size: =recipe.size
-    #     scale: =recipe.scale
-    #     predict: true
-
-    subtract-model:  # Replace with a second selfcal step?
+    smops-2:
       info: |
-        Subtract the model visibilities from the corrected data to produce the
-        corrected residuals.
-      cab: taql.update
+        Upsamples the wsclean model output to a higher frequency resolution, which suppresses
+        subband related artifacts in the residual visibilities.
+      cab: smops
+      skip_if_outputs: fresh
       params:
         ms: =recipe.ms-path
-        commands: =LIST("set", "CORRECTED_DATA={steps.image-3.column}-MODEL_DATA")
+        input-prefix: =steps.image-3.prefix
+        output-prefix: "{steps.image-3.prefix}-upsampled"
+        num-threads: =recipe.imaging-threads or recipe.threads
+        polynomial-order: 4
+        stokes: "I"
+        channels-out: =recipe.smops-nchan
+
+    predict-2:
+      info: |
+        Use wsclean to write the visibilities associated with the model to the
+        MODEL_DATA column. This is done as a separate step to make it possible
+        to inspect the images before updating the MODEL_DATA column.
+      cab: wsclean
+      params:
+        ms: =recipe.ms-path
+        temp-dir: =recipe.tempdir-path
+        prefix: '{steps.smops-2.output-prefix}'
+        nchan: '{steps.smops-2.channels-out}'
+        size: =recipe.size
+        scale: =recipe.scale
+        predict: true
 
     transient-imaging:
       info: Run the tron pipeline for image plane transient detection.
@@ -330,15 +338,9 @@ lightcurve-pipeline:
         ms: =recipe.ms-path
         dir-out: '{recipe.outdir-path}/breifast'
         dir-tmp: =recipe.tempdir-path
-        column.data: CORRECTED_DATA
-        column.model: =UNSET
         deep-image: =steps.image-3.restored.mfs
-        htc:
-          cadence: =recipe.htc_cadence
-          size: =recipe.htc_size
-          scale: =recipe.htc_scale
-          weight: =recipe.htc_weight
         ncpu: =recipe.breifast-threads or recipe.threads
         stokes: "I"
         publish-plot-title: ""  # Has recipe info in its default - override.
+        window-title: 'TRON: {current.obs}'
       tags: [breifast]
