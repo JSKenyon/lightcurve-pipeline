@@ -10,6 +10,8 @@ meerkat-target-flagging:
     data. This recipe was derived from the approach taken in oxkat
     (https://github.com/IanHeywood/oxkat).
 
+  # These ranges derive from the CAL_1GC_* band block in oxkat's
+  # oxkat/config.py. Check against that block when updating.
   assign_based_on:
     band:
       UHF:
