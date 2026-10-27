@@ -4,7 +4,8 @@ _include:
     - breizorro.yml
     - quartical.yml
     - taql.yml
-    - smops
+    - smops.yml
+    - crystalball.yml
 
 cabs:
   debug-print:
@@ -29,3 +30,30 @@ cabs:
           positional: true
         must_exist: true
         writable: true
+
+  extract-field-name:
+    info: |
+      Extract a target name as a string from the FIELD subtable. Provide row to return fields
+      other than the first.
+    flavour: python-code
+    command: |
+      import casacore.tables as pt
+      ms = pt.table(f"{ms_path}::FIELD")
+      field_name = ms.getcol("NAME")[row]
+      print(f"Field name is: {field_name}.")
+    inputs:
+      ms-path:
+        info: Path to the measurement set.
+        dtype: MS
+        policies:
+          positional: true
+        must_exist: true
+        writable: true
+      row:
+        info: Row in the FIELD subtable from which to extract the field name.
+        dtype: int
+        default: 0
+
+    outputs:
+      field-name:
+        dtype: str
