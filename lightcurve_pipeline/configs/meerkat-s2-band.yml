@@ -1,0 +1,31 @@
+# Basic band and deep imaging parameters.
+band: S2
+scale: 0.58asec
+weight: briggs -0.3
+size: 10240
+abs-threshold: 1e-6
+
+# Extra input to the tron-pfb step.
+transient-imaging.column.weight: WEIGHT_SPECTRUM
+# L band's 2 degree field of view, scaled by 1284 MHz / 2625 MHz and rounded to 0.1 degrees,
+# keeping L band's ratio of field of view to primary beam width. The search radius is half the
+# field of view, as in the L and UHF files.
+transient-imaging.htc.field-of-view: 1.0
+transient-imaging.htc.super-resolution-factor: 1.1
+transient-imaging.htc.robustness: -0.3
+transient-imaging.htc.images-per-chunk: 16
+transient-imaging.htc.max-simul-chunks: 5
+transient-imaging.search-radius: 0.5
+transient-imaging.breifast.reject-flux-threshold: "0.1"
+transient-imaging.breifast.reject-mean-threshold: "0.1"
+transient-imaging.primary-beam-band: "S2"
+transient-imaging.breifast.candidate-threshold: 7
+transient-imaging.breifast.detection-threshold: 8
+transient-imaging.breifast.repeater-threshold: 7
+transient-imaging.timescales: [0, FD, 15, 30, 60, 120, 240, 480, 960]
+transient-imaging.enable-pimenton-cutouts: true
+# The HTML report and the region file show every detection and every interesting region,
+# but no continuum source. Each list counts [detections, interesting regions, continuum
+# sources], and -1 takes all of them.
+transient-imaging.product-source-selection.html: [-1, -1, 0]
+transient-imaging.product-source-selection.regions: [-1, -1, 0]
