@@ -16,10 +16,13 @@ transient-imaging.search-radius: 1
 transient-imaging.breifast.reject-flux-threshold: "0.1"
 transient-imaging.breifast.reject-mean-threshold: "0.1"
 transient-imaging.primary-beam-band: "L"
-transient-imaging.flag-cube.flag-excess-rms: 1.5
 transient-imaging.breifast.candidate-threshold: 7
 transient-imaging.breifast.detection-threshold: 8
 transient-imaging.breifast.repeater-threshold: 7
 transient-imaging.timescales: [0, FD, 15, 30, 60, 120, 240, 480, 960]
 transient-imaging.enable-pimenton-cutouts: true
-transient-imaging.include-all-regions: true
+# The HTML report and the region file show every detection and every interesting region,
+# but no continuum source. Each list counts [detections, interesting regions, continuum
+# sources], and -1 takes all of them.
+transient-imaging.product-source-selection.html: [-1, -1, 0]
+transient-imaging.product-source-selection.regions: [-1, -1, 0]

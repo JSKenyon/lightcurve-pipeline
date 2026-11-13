@@ -7,7 +7,7 @@ https://github.com/IanHeywood/oxkat.
 
 The pipeline is implemented as a [Stimela](https://stimela.readthedocs.io)
 recipe: a declarative graph of steps that orchestrate established radio-astronomy
-tools (wsclean, QuartiCal, breizorro, tricolour, CASA and TAQL) inside
+tools (wsclean, smops, QuartiCal, breizorro, tricolour and CASA) inside
 containers. Given adequate hardware, it should be portable and reproducible.
 
 ## What the pipeline does
@@ -18,13 +18,14 @@ steps in order:
 1. **Flagging** — a basic, Oxkat-derived flagging subrecipe that flags known RFI
    bands and runs a tricolour pass. The original flags are backed up first.
 2. **Self-cal imaging loop** — an initial shallow wsclean image is used to build
-   a mask (breizorro), a masked image is made to populate `MODEL_DATA`, and
-   QuartiCal solves for a delay-and-offset term to produce `CORRECTED_DATA`.
-3. **Deep imaging** — the corrected data is re-imaged, and the sky model is
-   subtracted to leave corrected residuals.
-4. **Transient imaging and lightcurve extraction** — the `tron` recipe (from the
-   `breifast` package) performs high-time-resolution imaging of the residuals
-   and extracts lightcurves.
+   a mask (breizorro), and a masked image is made. Its model is upsampled in
+   frequency (smops) and predicted into `MODEL_DATA`, and QuartiCal solves for a
+   delay-and-offset term to produce `CORRECTED_DATA`.
+3. **Deep imaging** — the corrected data is re-imaged, and its model is
+   upsampled and predicted into `MODEL_DATA` in the same way.
+4. **Transient imaging and lightcurve extraction** — the `tron-pfb` recipe (from
+   the `breifast` package) images the residuals (`CORRECTED_DATA` minus
+   `MODEL_DATA`) at high time resolution and extracts lightcurves.
 
 ## 1GC
 
@@ -68,12 +69,12 @@ uv pip install -e .
 
 Some components of the pipeline need to be configured for the data and telescope
 in question. This is done with **parameter files** layered onto the recipe at
-run time. Ready-made files for MeerKAT at UHF and L band live in
-`lightcurve_pipeline/configs/`, and can be copied and tweaked for a specific
-case.
+run time. Ready-made files for MeerKAT at UHF, L and S-band (one for each of S0
+to S4) live in `lightcurve_pipeline/configs/`, and can be copied and tweaked for
+a specific case.
 
 A parameter file is a flat YAML mapping of recipe inputs to values. For example,
-`configs/meerkat-l-band.yml`:
+an excerpt of `configs/meerkat-l-band.yml`:
 
 ```yaml
 # Basic band and deep imaging parameters.
@@ -83,21 +84,21 @@ weight: briggs -0.3
 size: 10240
 abs-threshold: 1e-6
 
-# High time resolution imaging parameters.
-htc_size: 3410
-htc_scale: 3.3asec
-htc_cadence: 1
-htc_weight: briggs 0
-
-# Extra input to the tron step.
-transient-imaging.primary-beam-band: L
+# Extra input to the tron-pfb step.
+transient-imaging.htc.field-of-view: 2
+transient-imaging.htc.robustness: -0.3
+transient-imaging.search-radius: 1
+transient-imaging.primary-beam-band: "L"
 ```
 
-The `band` input (`L` or `UHF`) also drives band-specific RFI flagging. The
-`scale`, `weight`, `size` and `abs-threshold` inputs control the deep imaging,
-while the `htc_*` inputs control the high-time-resolution imaging used for
-lightcurve extraction. Any input can equally be overridden on the command line
-(see below).
+The `band` input (`UHF`, `L`, or one of `S0` to `S4`) selects the band-specific
+RFI flagging. The `scale`, `weight`, `size` and `abs-threshold` inputs control
+the deep imaging. Keys starting with `transient-imaging.` set inputs of the
+`tron-pfb` recipe, which does the high-time-resolution imaging and lightcurve
+extraction. Among them, `primary-beam-band` selects the primary beam model, and
+names UHF as `U`. Stimela does not reject unknown keys in a parameter file, so a
+misspelt key is silently ignored. Any input can equally be overridden on the
+command line (see below).
 
 ## Running
 
@@ -114,7 +115,7 @@ The following runs the pipeline for MeerKAT at L band, using the provided
 parameter file to configure the band-specific settings:
 
 ```bash
-stimela -C run lightcurve-pipeline.yml lightcurve-pipeline \
+stimela run lightcurve-pipeline.yml lightcurve-pipeline \
     ms-path=path/to/target.ms \
     outdir-path=path/to/outputs \
     -pf configs/meerkat-l-band.yml
@@ -122,7 +123,8 @@ stimela -C run lightcurve-pipeline.yml lightcurve-pipeline \
 
 - `ms-path` and `outdir-path` are the only required inputs; everything else is
   supplied by the parameter file or falls back to the recipe defaults.
-- `-C` validates the configuration before the run begins.
+- Stimela validates the recipe and its inputs before the run begins. To
+  validate without running anything, add `-d` (dry run) after `run`.
 - `-pf configs/meerkat-l-band.yml` layers the parameter file onto the recipe.
 
 You can add additional parameter files by specifying `-pf` multiple times; later
@@ -131,7 +133,7 @@ command line, which takes precedence over the parameter files, e.g. to raise the
 thread count:
 
 ```bash
-stimela -C run lightcurve-pipeline.yml lightcurve-pipeline \
+stimela run lightcurve-pipeline.yml lightcurve-pipeline \
     ms-path=path/to/target.ms \
     outdir-path=path/to/outputs \
     -pf configs/meerkat-l-band.yml \
@@ -142,5 +144,5 @@ stimela -C run lightcurve-pipeline.yml lightcurve-pipeline \
 
 Results are written under `outdir-path`, including the deep images, QuartiCal
 gain tables, and the transient-imaging products and lightcurves produced by the
-`tron` step (under `outdir-path/breifast`). Logs for each run are collected in
-`outdir-path/logs`.
+`tron-pfb` recipe (under `outdir-path/breifast`). Logs for each run are
+collected in `outdir-path/logs`.
