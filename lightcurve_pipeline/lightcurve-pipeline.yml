@@ -42,10 +42,13 @@ lightcurve-pipeline:
       required: true
     band:
       info: |
-        Set the observing band which is used to automatically configure
-        certain parameters.
+        Observing band of the data: UHF, L, or one of the S-band bands S0 to
+        S4. Selects the band-specific RFI flagging.
       dtype: str
-      choices: [L, UHF]
+      # These match the band choices of the flagging subrecipe. They are listed
+      # here rather than aliased to basic-flagging.band, as aliases have proved
+      # confusing.
+      choices: [UHF, L, S0, S1, S2, S3, S4]
       required: true
     scale:
       info: Pixel scale for the deep images.
